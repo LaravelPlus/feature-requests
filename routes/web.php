@@ -20,13 +20,14 @@ Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web']
     
     // Public Feature Requests (Customer View)
     Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
-    Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
     
-    // Create Feature Request (Requires authentication)
+    // Create Feature Request (Requires authentication) - Must come before /{slug}
     Route::middleware(['auth'])->group(function () {
         Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
         Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
     });
+    
+    Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
     
     // Voting (Requires authentication)
     Route::middleware(['auth'])->group(function () {
