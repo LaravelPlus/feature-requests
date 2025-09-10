@@ -41,20 +41,57 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCommentRequest $request): JsonResponse
+    public function store(Request $request, string $slug)
     {
-        if (!$this->commentService->canCommentOn($request->feature_request_id)) {
-            return response()->json([
-                'message' => 'You cannot comment on this feature request.'
-            ], 403);
+        // Get the feature request by slug
+        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        
+        if (!$featureRequest) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Feature request not found.'
+                ], 404);
+            }
+            return redirect()->back()->with('error', 'Feature request not found.');
         }
 
-        $comment = $this->commentService->create($request->validated());
+        // Validate the request
+        $validated = $request->validate([
+            'content' => 'required|string|min:3|max:2000',
+            'parent_id' => 'nullable|exists:feature_request_comments,id'
+        ]);
 
-        return response()->json([
-            'message' => 'Comment created successfully.',
-            'data' => new CommentResource($comment)
-        ], 201);
+        // Add feature_request_id to validated data
+        $validated['feature_request_id'] = $featureRequest->id;
+
+        if (!$this->commentService->canCommentOn($featureRequest->id)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'You cannot comment on this feature request.'
+                ], 403);
+            }
+            return redirect()->back()->with('error', 'You cannot comment on this feature request.');
+        }
+
+        try {
+            $comment = $this->commentService->create($validated);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Comment created successfully.',
+                    'data' => new CommentResource($comment)
+                ], 201);
+            }
+
+            return redirect()->back()->with('success', 'Comment posted successfully!');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**

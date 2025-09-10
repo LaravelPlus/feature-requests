@@ -76,10 +76,11 @@ class FeatureRequestService
         // Set default values
         $data['user_id'] = $data['user_id'] ?? Auth::id();
         $data['status'] = $data['status'] ?? 'pending';
-        $data['priority'] = $data['priority'] ?? 'medium';
         $data['is_public'] = $data['is_public'] ?? true;
         $data['is_featured'] = $data['is_featured'] ?? false;
         $data['vote_count'] = 0;
+        $data['up_votes'] = 0;
+        $data['down_votes'] = 0;
         $data['comment_count'] = 0;
         $data['view_count'] = 0;
 

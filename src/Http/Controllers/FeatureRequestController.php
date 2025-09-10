@@ -9,6 +9,7 @@ use LaravelPlus\FeatureRequests\Http\Requests\UpdateFeatureRequestRequest;
 use LaravelPlus\FeatureRequests\Http\Resources\FeatureRequestResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\View\View;
 
@@ -58,6 +59,15 @@ class FeatureRequestController extends Controller
         $categories = $this->categoryService->getActiveWithCounts();
         $statistics = $this->featureRequestService->getPublicStatistics();
 
+        // Add vote information for each feature request
+        if (auth()->check()) {
+            $featureRequests->getCollection()->transform(function ($featureRequest) {
+                $featureRequest->user_has_voted = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->hasUserVoted($featureRequest->id);
+                $featureRequest->user_vote_type = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->getUserVoteType($featureRequest->id);
+                return $featureRequest;
+            });
+        }
+
         return view('feature-requests::public.index', compact('featureRequests', 'categories', 'statistics'));
     }
 
@@ -79,7 +89,7 @@ class FeatureRequestController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreFeatureRequestRequest $request): JsonResponse|View
+    public function store(StoreFeatureRequestRequest $request): JsonResponse|RedirectResponse
     {
         if (!$this->featureRequestService->canCreate()) {
             abort(403, 'You do not have permission to create feature requests.');
@@ -137,6 +147,12 @@ class FeatureRequestController extends Controller
 
         // Increment view count
         $this->featureRequestService->incrementViewCount($featureRequest->id);
+
+        // Add vote information if user is authenticated
+        if (auth()->check()) {
+            $featureRequest->user_has_voted = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->hasUserVoted($featureRequest->id);
+            $featureRequest->user_vote_type = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->getUserVoteType($featureRequest->id);
+        }
 
         return view('feature-requests::public.show', compact('featureRequest'));
     }
@@ -196,7 +212,7 @@ class FeatureRequestController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFeatureRequestRequest $request, string $slug): JsonResponse|View
+    public function update(UpdateFeatureRequestRequest $request, string $slug): JsonResponse|RedirectResponse
     {
         $featureRequest = $this->featureRequestService->findBySlug($slug);
         
@@ -224,7 +240,7 @@ class FeatureRequestController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $slug): JsonResponse|View
+    public function destroy(string $slug): JsonResponse|RedirectResponse
     {
         $featureRequest = $this->featureRequestService->findBySlug($slug);
         

@@ -5,7 +5,7 @@
 @section('subheader', 'Feature Request Details')
 
 @section('content')
-<div class="max-w-6xl mx-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
@@ -51,6 +51,15 @@
                     
                     <div class="prose prose-lg max-w-none text-gray-600">
                         {!! nl2br(e($featureRequest->description)) !!}
+                        
+                        @if($featureRequest->additional_info)
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-3">Additional Information</h4>
+                                <div class="text-gray-600">
+                                    {!! nl2br(e($featureRequest->additional_info)) !!}
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -63,40 +72,21 @@
                 
                 <div class="p-6">
                     <!-- Add Comment Form -->
-                    @auth
-                        <form action="{{ route('feature-requests.comments.store', $featureRequest->slug) }}" method="POST" class="mb-6">
-                            @csrf
-                            <div class="space-y-3">
-                                <textarea name="content" 
-                                          rows="3"
-                                          placeholder="Share your thoughts on this feature request..."
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
-                                <div class="flex justify-end">
-                                    <button type="submit" 
-                                            class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                                        Post Comment
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    @else
-                        <div class="text-center py-6 border border-dashed border-gray-300 rounded-lg mb-6">
-                            <svg class="h-8 w-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            <p class="text-sm text-gray-500 mb-3">Please sign in to leave a comment</p>
-                            <div class="flex justify-center space-x-3">
-                                <a href="{{ route('login') }}" 
-                                   class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                                    Sign In
-                                </a>
-                                <a href="{{ route('register') }}" 
-                                   class="px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors">
-                                    Sign Up
-                                </a>
+                    <form action="{{ route('feature-requests.comments.store', $featureRequest->slug) }}" method="POST" class="mb-6">
+                        @csrf
+                        <div class="space-y-3">
+                            <textarea name="content" 
+                                      rows="3"
+                                      placeholder="Share your thoughts on this feature request..."
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                            <div class="flex justify-end">
+                                <button type="submit" 
+                                        class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                    Post Comment
+                                </button>
                             </div>
                         </div>
-                    @endauth
+                    </form>
 
                     <!-- Comments List -->
                     <div class="space-y-4">
@@ -135,45 +125,77 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Vote for this feature</h3>
                     
-                    @auth
-                        <div class="text-center">
-                            <div class="mb-4">
-                                <div class="text-3xl font-bold text-gray-900 mb-1">{{ $featureRequest->vote_count }}</div>
-                                <div class="text-sm text-gray-500">votes</div>
-                            </div>
-                            
-                            <form action="{{ route('feature-requests.vote', $featureRequest->slug) }}" method="POST" class="space-y-3">
-                                @csrf
-                                <button type="submit" 
-                                        class="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V18m-7-8a2 2 0 112 0 2 2 0 01-2 0z"></path>
-                                    </svg>
-                                    Vote for this feature
-                                </button>
-                            </form>
-                        </div>
-                    @else
-                        <div class="text-center">
-                            <div class="mb-4">
-                                <div class="text-3xl font-bold text-gray-900 mb-1">{{ $featureRequest->vote_count }}</div>
-                                <div class="text-sm text-gray-500">votes</div>
-                            </div>
-                            <div class="space-y-3">
-                                <a href="{{ route('login') }}" 
-                                   class="w-full inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    Sign in to vote
-                                </a>
-                                <a href="{{ route('register') }}" 
-                                   class="w-full inline-flex items-center justify-center px-4 py-3 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors">
-                                    Create Account
-                                </a>
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ ($featureRequest->up_votes ?? 0) - ($featureRequest->down_votes ?? 0) }}</div>
+                            <div class="text-sm text-gray-500">net votes</div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ $featureRequest->up_votes ?? 0 }} up • {{ $featureRequest->down_votes ?? 0 }} down
                             </div>
                         </div>
-                    @endauth
+                        
+                        @if(isset($featureRequest->user_has_voted) && $featureRequest->user_has_voted)
+                            <!-- Already Voted - Show Current Vote Status -->
+                            <div class="flex items-center justify-center space-x-4">
+                                <!-- Thumbs Up Button (Disabled) -->
+                                <div class="p-3 rounded-full 
+                                    @if($featureRequest->user_vote_type === 'up') bg-orange-100 text-orange-500
+                                    @else bg-gray-100 text-gray-400
+                                    @endif">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M7.493 18.75c-.425 0-.82-.236-.975-.632A7.48 7.48 0 016 15.375c0-1.75.599-3.358 1.602-4.634.151-.192.373-.309.6-.397.473-.183.89-.514 1.212-.924a9.042 9.042 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75 2.25 2.25 0 012.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558-.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H14.23c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23h-.777zM2.331 10.977a11.969 11.969 0 00-.831 4.398 12 12 0 00.52 3.507c.26.85 1.084 1.368 1.973 1.368H4.9c.445 0 .72-.498.523-.898a8.963 8.963 0 01-.924-3.977c0-1.708.476-3.305 1.302-4.666.245-.403-.028-.959-.5-.959H4.25c-.833 0-1.612.453-1.918 1.227z"/>
+                                    </svg>
+                                </div>
+
+                                <!-- Vote Count -->
+                                <div class="text-2xl font-bold text-gray-700 min-w-[40px] text-center">
+                                    {{ ($featureRequest->up_votes ?? 0) - ($featureRequest->down_votes ?? 0) }}
+                                </div>
+
+                                <!-- Thumbs Down Button (Disabled) -->
+                                <div class="p-3 rounded-full 
+                                    @if($featureRequest->user_vote_type === 'down') bg-blue-100 text-blue-500
+                                    @else bg-gray-100 text-gray-400
+                                    @endif">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M15.73 5.25h1.035A7.465 7.465 0 0118 9.375a7.465 7.465 0 01-1.235 4.125h-.148c-.806 0-1.355.673-1.355 1.456 0 .31.12.616.33.835.806.875 1.309 1.76 1.309 2.889 0 .563-.115 1.109-.33 1.59-.215.48-.53.923-.93 1.309-.4.386-.885.69-1.44.923-.555.233-1.17.35-1.8.35H9.75a.75.75 0 01-.75-.75V3.75a.75.75 0 01.75-.75h.148c.806 0 1.355-.673 1.355-1.456 0-.31-.12-.616-.33-.835-.806-.875-1.309-1.76-1.309-2.889 0-.563.115-1.109.33-1.59-.215-.48-.53-.923-.93-1.309-.4-.386-.885-.69-1.44-.923-.555-.233-1.17-.35-1.8-.35H15.73zM21.669 13.023a11.969 11.969 0 00.831-4.398 12 12 0 00-.52-3.507c-.26-.85-1.084-1.368-1.973-1.368H19.1c-.445 0-.72.498-.523.898a8.963 8.963 0 01.924 3.977c0 1.708-.476 3.305-1.302 4.666-.245.403.028.959.5.959h.148c.833 0 1.612-.453 1.918-1.227z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Inline Vote Buttons -->
+                            <div class="flex items-center justify-center space-x-4">
+                                <!-- Thumbs Up Button -->
+                                <form action="{{ route('feature-requests.vote', $featureRequest->slug) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="vote_type" value="up">
+                                    <button type="submit" 
+                                            class="p-3 rounded-full hover:bg-orange-100 transition-colors group">
+                                        <svg class="w-6 h-6 text-gray-400 group-hover:text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M7.493 18.75c-.425 0-.82-.236-.975-.632A7.48 7.48 0 016 15.375c0-1.75.599-3.358 1.602-4.634.151-.192.373-.309.6-.397.473-.183.89-.514 1.212-.924a9.042 9.042 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75 2.25 2.25 0 012.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558-.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H14.23c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23h-.777zM2.331 10.977a11.969 11.969 0 00-.831 4.398 12 12 0 00.52 3.507c.26.85 1.084 1.368 1.973 1.368H4.9c.445 0 .72-.498.523-.898a8.963 8.963 0 01-.924-3.977c0-1.708.476-3.305 1.302-4.666.245-.403-.028-.959-.5-.959H4.25c-.833 0-1.612.453-1.918 1.227z"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                                
+                                <!-- Vote Count -->
+                                <div class="text-2xl font-bold text-gray-700 min-w-[40px] text-center">
+                                    {{ ($featureRequest->up_votes ?? 0) - ($featureRequest->down_votes ?? 0) }}
+                                </div>
+                                
+                                <!-- Thumbs Down Button -->
+                                <form action="{{ route('feature-requests.vote', $featureRequest->slug) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="vote_type" value="down">
+                                    <button type="submit" 
+                                            class="p-3 rounded-full hover:bg-blue-100 transition-colors group">
+                                        <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M15.73 5.25h1.035A7.465 7.465 0 0118 9.375a7.465 7.465 0 01-1.235 4.125h-.148c-.806 0-1.355.673-1.355 1.456 0 .31.12.616.33.835.806.875 1.309 1.76 1.309 2.889 0 .563-.115 1.109-.33 1.59-.215.48-.53.923-.93 1.309-.4.386-.885.69-1.44.923-.555.233-1.17.35-1.8.35H9.75a.75.75 0 01-.75-.75V3.75a.75.75 0 01.75-.75h.148c.806 0 1.355-.673 1.355-1.456 0-.31-.12-.616-.33-.835-.806-.875-1.309-1.76-1.309-2.889 0-.563.115-1.109.33-1.59-.215-.48-.53-.923-.93-1.309-.4-.386-.885-.69-1.44-.923-.555-.233-1.17-.35-1.8-.35H15.73zM21.669 13.023a11.969 11.969 0 00.831-4.398 12 12 0 00-.52-3.507c-.26-.85-1.084-1.368-1.973-1.368H19.1c-.445 0-.72.498-.523.898a8.963 8.963 0 01.924 3.977c0 1.708-.476 3.305-1.302 4.666-.245.403.028.959.5.959h.148c.833 0 1.612-.453 1.918-1.227z"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 

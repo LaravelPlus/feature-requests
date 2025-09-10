@@ -20,6 +20,7 @@ class FeatureRequest extends Model
     protected $fillable = [
         'title',
         'description',
+        'additional_info',
         'status',
         'priority',
         'category_id',
@@ -31,6 +32,8 @@ class FeatureRequest extends Model
         'is_public',
         'is_featured',
         'vote_count',
+        'up_votes',
+        'down_votes',
         'comment_count',
         'view_count',
     ];
@@ -41,6 +44,8 @@ class FeatureRequest extends Model
         'is_featured' => 'boolean',
         'tags' => 'array',
         'vote_count' => 'integer',
+        'up_votes' => 'integer',
+        'down_votes' => 'integer',
         'comment_count' => 'integer',
         'view_count' => 'integer',
         'estimated_effort' => 'integer',
@@ -226,7 +231,15 @@ class FeatureRequest extends Model
      */
     public function updateVoteCount(): void
     {
-        $this->update(['vote_count' => $this->votes()->count()]);
+        $upVotes = $this->votes()->where('vote_type', 'up')->count();
+        $downVotes = $this->votes()->where('vote_type', 'down')->count();
+        $totalVotes = $upVotes + $downVotes;
+        
+        $this->update([
+            'vote_count' => $totalVotes,
+            'up_votes' => $upVotes,
+            'down_votes' => $downVotes,
+        ]);
     }
 
     /**

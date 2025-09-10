@@ -6,6 +6,7 @@ use LaravelPlus\FeatureRequests\Repositories\VoteRepository;
 use LaravelPlus\FeatureRequests\Repositories\FeatureRequestRepository;
 use LaravelPlus\FeatureRequests\Models\Vote;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class VoteService
@@ -55,6 +56,7 @@ class VoteService
             ]);
 
             $this->updateVoteCount($featureRequestId);
+            $this->clearCache();
             
             return $existingVote;
         }
@@ -77,6 +79,7 @@ class VoteService
         ]);
 
         $this->updateVoteCount($featureRequestId);
+        $this->clearCache();
 
         return $vote;
     }
@@ -96,6 +99,7 @@ class VoteService
 
         if ($result) {
             $this->updateVoteCount($featureRequestId);
+            $this->clearCache();
         }
 
         return $result;
@@ -226,6 +230,16 @@ class VoteService
         
         if ($featureRequest) {
             $featureRequest->updateVoteCount();
+        }
+    }
+
+    /**
+     * Clear cache.
+     */
+    protected function clearCache(): void
+    {
+        if (config('feature-requests.cache.enabled', true)) {
+            Cache::tags(['feature-requests'])->flush();
         }
     }
 

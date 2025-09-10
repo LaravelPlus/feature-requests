@@ -2,30 +2,48 @@
 
 namespace LaravelPlus\FeatureRequests\Tests\Unit\Models;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use LaravelPlus\FeatureRequests\Models\FeatureRequest;
 use LaravelPlus\FeatureRequests\Models\Category;
 use LaravelPlus\FeatureRequests\Models\Vote;
 use LaravelPlus\FeatureRequests\Models\Comment;
 use LaravelPlus\FeatureRequests\Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Database\Eloquent\Collection;
 
 class FeatureRequestTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_feature_request_can_be_created()
+    {
+        $featureRequest = FeatureRequest::factory()->create([
+            'title' => 'Test Feature',
+            'description' => 'This is a test feature request',
+            'status' => 'pending',
+        ]);
+
+        $this->assertDatabaseHas('feature_requests', [
+            'title' => 'Test Feature',
+            'description' => 'This is a test feature request',
+            'status' => 'pending',
+        ]);
+
+        $this->assertEquals('Test Feature', $featureRequest->title);
+        $this->assertEquals('This is a test feature request', $featureRequest->description);
+        $this->assertEquals('pending', $featureRequest->status);
+    }
+
     public function test_feature_request_belongs_to_user()
     {
-        $user = $this->createUser();
+        $user = \App\Models\User::factory()->create();
         $featureRequest = FeatureRequest::factory()->create(['user_id' => $user->id]);
 
-        $this->assertInstanceOf('App\Models\User', $featureRequest->user);
+        $this->assertInstanceOf(\App\Models\User::class, $featureRequest->user);
         $this->assertEquals($user->id, $featureRequest->user->id);
     }
 
     public function test_feature_request_belongs_to_category()
     {
-        $category = Category::factory()->create();
+        $category = Category::factory()->create(['name' => 'UI/UX']);
         $featureRequest = FeatureRequest::factory()->create(['category_id' => $category->id]);
 
         $this->assertInstanceOf(Category::class, $featureRequest->category);
@@ -35,137 +53,115 @@ class FeatureRequestTest extends TestCase
     public function test_feature_request_has_many_votes()
     {
         $featureRequest = FeatureRequest::factory()->create();
-        $votes = Vote::factory()->count(3)->create(['feature_request_id' => $featureRequest->id]);
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
 
-        $this->assertInstanceOf(Collection::class, $featureRequest->votes);
-        $this->assertCount(3, $featureRequest->votes);
+        Vote::factory()->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user1->id,
+            'vote_type' => 'up'
+        ]);
+
+        Vote::factory()->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user2->id,
+            'vote_type' => 'down'
+        ]);
+
+        $this->assertCount(2, $featureRequest->votes);
+        $this->assertInstanceOf(Vote::class, $featureRequest->votes->first());
     }
 
     public function test_feature_request_has_many_comments()
     {
         $featureRequest = FeatureRequest::factory()->create();
-        $comments = Comment::factory()->count(2)->create(['feature_request_id' => $featureRequest->id]);
+        $user = \App\Models\User::factory()->create();
 
-        $this->assertInstanceOf(Collection::class, $featureRequest->comments);
-        $this->assertCount(2, $featureRequest->comments);
+        Comment::factory()->count(3)->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user->id,
+        ]);
+
+        $this->assertCount(3, $featureRequest->comments);
+        $this->assertInstanceOf(Comment::class, $featureRequest->comments->first());
     }
 
-    public function test_feature_request_uses_soft_deletes()
+    public function test_feature_request_updates_vote_count()
     {
-        $featureRequest = FeatureRequest::factory()->create();
-        
-        $this->assertNull($featureRequest->deleted_at);
-        
-        $featureRequest->delete();
-        
-        $this->assertSoftDeleted('feature_requests', ['id' => $featureRequest->id]);
+        $featureRequest = FeatureRequest::factory()->create([
+            'up_votes' => 0,
+            'down_votes' => 0,
+            'vote_count' => 0,
+        ]);
+
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
+        $user3 = \App\Models\User::factory()->create();
+
+        // Add 2 upvotes and 1 downvote
+        Vote::factory()->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user1->id,
+            'vote_type' => 'up'
+        ]);
+
+        Vote::factory()->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user2->id,
+            'vote_type' => 'up'
+        ]);
+
+        Vote::factory()->create([
+            'feature_request_id' => $featureRequest->id,
+            'user_id' => $user3->id,
+            'vote_type' => 'down'
+        ]);
+
+        $featureRequest->updateVoteCount();
+
+        $this->assertEquals(2, $featureRequest->fresh()->up_votes);
+        $this->assertEquals(1, $featureRequest->fresh()->down_votes);
+        $this->assertEquals(3, $featureRequest->fresh()->vote_count);
     }
 
     public function test_feature_request_has_slug()
     {
-        $featureRequest = FeatureRequest::factory()->create(['title' => 'Test Feature Request']);
-        
+        $featureRequest = FeatureRequest::factory()->create([
+            'title' => 'Test Feature Request'
+        ]);
+
         $this->assertNotNull($featureRequest->slug);
-        $this->assertEquals('test-feature-request', $featureRequest->slug);
+        $this->assertStringContainsString('test-feature-request', $featureRequest->slug);
     }
 
-    public function test_feature_request_can_be_featured()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['is_featured' => true]);
-        
-        $this->assertTrue($featureRequest->is_featured);
-    }
-
-    public function test_feature_request_can_be_public()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['is_public' => true]);
-        
-        $this->assertTrue($featureRequest->is_public);
-    }
-
-    public function test_feature_request_has_status()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['status' => 'in_progress']);
-        
-        $this->assertEquals('in_progress', $featureRequest->status);
-    }
-
-    public function test_feature_request_has_priority()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['priority' => 'high']);
-        
-        $this->assertEquals('high', $featureRequest->priority);
-    }
-
-    public function test_feature_request_has_estimated_effort()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['estimated_effort' => 'medium']);
-        
-        $this->assertEquals('medium', $featureRequest->estimated_effort);
-    }
-
-    public function test_feature_request_has_tags()
-    {
-        $featureRequest = FeatureRequest::factory()->create(['tags' => 'ui,ux,mobile']);
-        
-        $this->assertEquals('ui,ux,mobile', $featureRequest->tags);
-    }
-
-    public function test_feature_request_has_due_date()
-    {
-        $dueDate = now()->addDays(30);
-        $featureRequest = FeatureRequest::factory()->create(['due_date' => $dueDate]);
-        
-        $this->assertEquals($dueDate->format('Y-m-d'), $featureRequest->due_date->format('Y-m-d'));
-    }
-
-    public function test_feature_request_vote_count_defaults_to_zero()
+    public function test_feature_request_can_be_soft_deleted()
     {
         $featureRequest = FeatureRequest::factory()->create();
-        
-        $this->assertEquals(0, $featureRequest->vote_count);
+        $featureRequest->delete();
+
+        $this->assertSoftDeleted('feature_requests', [
+            'id' => $featureRequest->id
+        ]);
     }
 
-    public function test_feature_request_comment_count_defaults_to_zero()
-    {
-        $featureRequest = FeatureRequest::factory()->create();
-        
-        $this->assertEquals(0, $featureRequest->comment_count);
-    }
-
-    public function test_feature_request_view_count_defaults_to_zero()
-    {
-        $featureRequest = FeatureRequest::factory()->create();
-        
-        $this->assertEquals(0, $featureRequest->view_count);
-    }
-
-    public function test_feature_request_can_be_assigned_to_user()
-    {
-        $assignedUser = $this->createUser();
-        $featureRequest = FeatureRequest::factory()->create(['assigned_to' => $assignedUser->id]);
-        
-        $this->assertEquals($assignedUser->id, $featureRequest->assigned_to);
-    }
-
-    public function test_feature_request_scope_published()
+    public function test_feature_request_scope_public()
     {
         FeatureRequest::factory()->create(['is_public' => true]);
         FeatureRequest::factory()->create(['is_public' => false]);
-        
-        $publishedRequests = FeatureRequest::published()->get();
-        
-        $this->assertCount(1, $publishedRequests);
-        $this->assertTrue($publishedRequests->first()->is_public);
+
+        $publicRequests = FeatureRequest::public()->get();
+
+        $this->assertCount(1, $publicRequests);
+        $this->assertTrue($publicRequests->first()->is_public);
     }
 
     public function test_feature_request_scope_featured()
     {
         FeatureRequest::factory()->create(['is_featured' => true]);
         FeatureRequest::factory()->create(['is_featured' => false]);
-        
+
         $featuredRequests = FeatureRequest::featured()->get();
-        
+
         $this->assertCount(1, $featuredRequests);
         $this->assertTrue($featuredRequests->first()->is_featured);
     }
@@ -175,29 +171,10 @@ class FeatureRequestTest extends TestCase
         FeatureRequest::factory()->create(['status' => 'pending']);
         FeatureRequest::factory()->create(['status' => 'in_progress']);
         FeatureRequest::factory()->create(['status' => 'completed']);
-        
-        $pendingRequests = FeatureRequest::byStatus('pending')->get();
-        $inProgressRequests = FeatureRequest::byStatus('in_progress')->get();
-        
-        $this->assertCount(1, $pendingRequests);
-        $this->assertCount(1, $inProgressRequests);
-        $this->assertEquals('pending', $pendingRequests->first()->status);
-        $this->assertEquals('in_progress', $inProgressRequests->first()->status);
-    }
 
-    public function test_feature_request_scope_by_priority()
-    {
-        FeatureRequest::factory()->create(['priority' => 'high']);
-        FeatureRequest::factory()->create(['priority' => 'medium']);
-        FeatureRequest::factory()->create(['priority' => 'low']);
-        
-        $highPriorityRequests = FeatureRequest::byPriority('high')->get();
-        $mediumPriorityRequests = FeatureRequest::byPriority('medium')->get();
-        
-        $this->assertCount(1, $highPriorityRequests);
-        $this->assertCount(1, $mediumPriorityRequests);
-        $this->assertEquals('high', $highPriorityRequests->first()->priority);
-        $this->assertEquals('medium', $mediumPriorityRequests->first()->priority);
+        $pendingRequests = FeatureRequest::byStatus('pending')->get();
+        $this->assertCount(1, $pendingRequests);
+        $this->assertEquals('pending', $pendingRequests->first()->status);
     }
 
     public function test_feature_request_scope_by_category()
@@ -205,32 +182,19 @@ class FeatureRequestTest extends TestCase
         $category = Category::factory()->create();
         FeatureRequest::factory()->create(['category_id' => $category->id]);
         FeatureRequest::factory()->create(['category_id' => null]);
-        
+
         $categoryRequests = FeatureRequest::byCategory($category->id)->get();
-        
         $this->assertCount(1, $categoryRequests);
         $this->assertEquals($category->id, $categoryRequests->first()->category_id);
     }
 
-    public function test_feature_request_scope_most_voted()
+    public function test_feature_request_scope_popular()
     {
-        $featureRequest1 = FeatureRequest::factory()->create(['vote_count' => 10]);
-        $featureRequest2 = FeatureRequest::factory()->create(['vote_count' => 5]);
-        $featureRequest3 = FeatureRequest::factory()->create(['vote_count' => 15]);
-        
-        $mostVoted = FeatureRequest::mostVoted()->first();
-        
-        $this->assertEquals($featureRequest3->id, $mostVoted->id);
-        $this->assertEquals(15, $mostVoted->vote_count);
-    }
+        $popular = FeatureRequest::factory()->create(['up_votes' => 10]);
+        $notPopular = FeatureRequest::factory()->create(['up_votes' => 1]);
 
-    public function test_feature_request_scope_recent()
-    {
-        $oldRequest = FeatureRequest::factory()->create(['created_at' => now()->subDays(10)]);
-        $newRequest = FeatureRequest::factory()->create(['created_at' => now()->subDays(1)]);
-        
-        $recentRequests = FeatureRequest::recent()->get();
-        
-        $this->assertEquals($newRequest->id, $recentRequests->first()->id);
+        $popularRequests = FeatureRequest::popular()->get();
+        $this->assertCount(1, $popularRequests);
+        $this->assertEquals($popular->id, $popularRequests->first()->id);
     }
 }

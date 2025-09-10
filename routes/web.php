@@ -16,33 +16,27 @@ use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
 |
 */
 
-Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web'])->group(function () {
+Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web', 'auth'])->group(function () {
     
-    // Public Feature Requests (Customer View)
+    // Feature Requests (Customer View) - All require authentication
     Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
     
-    // Create Feature Request (Requires authentication) - Must come before /{slug}
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
-        Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
-    });
+    // Create Feature Request - Must come before /{slug}
+    Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
+    Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
     
     Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
     
-    // Voting (Requires authentication)
-    Route::middleware(['auth'])->group(function () {
-        Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
-        Route::delete('/{slug}/vote', [VoteController::class, 'destroy'])->name('unvote');
-    });
+    // Voting
+    Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
+    Route::delete('/{slug}/vote', [VoteController::class, 'destroy'])->name('unvote');
     
-    // Comments (Requires authentication)
-    Route::middleware(['auth'])->group(function () {
-        Route::post('/{slug}/comments', [CommentController::class, 'store'])->name('comments.store');
-        Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
-        Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-    });
+    // Comments
+    Route::post('/{slug}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     
-    // Public Categories (Read-only)
+    // Categories (Read-only)
     Route::prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'publicIndex'])->name('index');
         Route::get('/{slug}', [CategoryController::class, 'publicShow'])->name('show');
