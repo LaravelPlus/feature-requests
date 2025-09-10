@@ -263,6 +263,25 @@ class FeatureRequestRepository
     }
 
     /**
+     * Get public statistics (only for public feature requests).
+     */
+    public function getPublicStatistics(): array
+    {
+        $publicQuery = $this->model->where('is_public', true);
+        
+        return [
+            'total' => $publicQuery->count(),
+            'pending' => $publicQuery->clone()->status('pending')->count(),
+            'in_progress' => $publicQuery->clone()->status('in_progress')->count(),
+            'completed' => $publicQuery->clone()->status('completed')->count(),
+            'rejected' => $publicQuery->clone()->status('rejected')->count(),
+            'featured' => $publicQuery->clone()->featured()->count(),
+            'total_votes' => $publicQuery->clone()->sum('vote_count'),
+            'total_comments' => $publicQuery->clone()->sum('comment_count'),
+        ];
+    }
+
+    /**
      * Get feature requests that need attention.
      */
     public function getNeedingAttention(): Collection

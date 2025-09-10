@@ -226,6 +226,22 @@ class FeatureRequestService
     }
 
     /**
+     * Get public statistics (only for public feature requests).
+     */
+    public function getPublicStatistics(): array
+    {
+        $cacheKey = 'public_feature_request_statistics';
+        
+        if (config('feature-requests.cache.enabled', true)) {
+            return Cache::tags(['feature-requests'])->remember($cacheKey, config('feature-requests.cache.ttl', 3600), function () {
+                return $this->featureRequestRepository->getPublicStatistics();
+            });
+        }
+
+        return $this->featureRequestRepository->getPublicStatistics();
+    }
+
+    /**
      * Get feature requests that need attention.
      */
     public function getNeedingAttention(): Collection

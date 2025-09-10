@@ -68,7 +68,7 @@ class FeatureRequestController extends Controller
     {
         $categories = $this->categoryService->getActive();
         
-        return view('feature-requests::create', compact('categories'));
+        return view('feature-requests::admin.create', compact('categories'));
     }
 
     /**

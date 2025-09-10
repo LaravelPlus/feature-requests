@@ -161,16 +161,16 @@
                 </div>
             @endif
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
                 @yield('content')
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 mt-16">
-            <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Fixed Footer -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm text-gray-500">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.</p>
+                    <p class="text-sm text-gray-500">&copy; 2025 Spay. All rights reserved.</p>
                 </div>
             </div>
         </footer>

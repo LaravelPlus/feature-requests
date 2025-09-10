@@ -21,7 +21,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource (Admin).
      */
     public function index(Request $request): View|AnonymousResourceCollection
     {
@@ -31,7 +31,17 @@ class CategoryController extends Controller
             return CategoryResource::collection($categories);
         }
 
-        return view('feature-requests::categories.index', compact('categories'));
+        return view('feature-requests::admin.categories.index', compact('categories'));
+    }
+
+    /**
+     * Display a listing of public categories (Customer).
+     */
+    public function publicIndex(Request $request): View
+    {
+        $categories = $this->categoryService->getActiveWithCounts();
+
+        return view('feature-requests::public.categories.index', compact('categories'));
     }
 
     /**
@@ -65,7 +75,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource (Admin).
      */
     public function show(string $slug): View|CategoryResource
     {
@@ -79,7 +89,45 @@ class CategoryController extends Controller
             return new CategoryResource($category);
         }
 
-        return view('feature-requests::categories.show', compact('category'));
+        return view('feature-requests::admin.categories.show', compact('category'));
+    }
+
+    /**
+     * Display the specified public resource (Customer).
+     */
+    public function publicShow(string $slug): View
+    {
+        $category = $this->categoryService->findBySlug($slug);
+        
+        if (!$category) {
+            abort(404, 'Category not found.');
+        }
+
+        return view('feature-requests::public.categories.show', compact('category'));
+    }
+
+    /**
+     * Display admin listing of the resource.
+     */
+    public function adminIndex(Request $request): View
+    {
+        $categories = $this->categoryService->getActiveWithCounts();
+
+        return view('feature-requests::admin.categories.index', compact('categories'));
+    }
+
+    /**
+     * Display admin view of the specified resource.
+     */
+    public function adminShow(string $slug): View
+    {
+        $category = $this->categoryService->findBySlug($slug);
+        
+        if (!$category) {
+            abort(404, 'Category not found.');
+        }
+
+        return view('feature-requests::admin.categories.show', compact('category'));
     }
 
     /**
