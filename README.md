@@ -1,234 +1,385 @@
 # LaravelPlus Feature Requests
 
-A comprehensive Laravel feature requests package with voting system, categories, and status management.
+A comprehensive Laravel package for managing feature requests with voting, commenting, and categorization capabilities. Built with modern design principles and a beautiful shadcn/ui inspired interface.
 
-## Features
+## ✨ Features
 
 - **Feature Request Management**: Create, edit, and manage feature requests
-- **Voting System**: Users can vote up/down on feature requests
-- **Categories**: Organize feature requests into categories
-- **Comments**: Users can comment on feature requests with threaded replies
-- **Status Management**: Track feature request status (pending, under review, planned, in progress, completed, rejected)
-- **Priority Levels**: Set priority levels (low, medium, high, critical)
-- **User Assignment**: Assign feature requests to specific users
-- **Search & Filtering**: Search and filter feature requests
-- **Statistics**: Get comprehensive statistics about feature requests
-- **Permissions**: Role-based permissions for different actions
-- **Caching**: Built-in caching for better performance
-- **API & Web Routes**: Both API and web interfaces
-- **Vue.js Components**: Ready-to-use Vue.js components
+- **Voting System**: Users can vote on feature requests
+- **Comments & Discussions**: Threaded comments for each feature request
+- **Categorization**: Organize requests with categories
+- **Status Tracking**: Track request status (pending, in progress, completed, rejected)
+- **Priority Levels**: Set priority levels (low, medium, high)
+- **User Management**: User authentication and authorization
+- **Modern UI**: Beautiful shadcn/ui inspired admin interface
+- **API Support**: Full REST API for all operations
+- **Search & Filtering**: Advanced search and filtering capabilities
+- **Responsive Design**: Mobile-friendly interface
+- **Soft Deletes**: Safe deletion with recovery options
 
-## Installation
+## 🚀 Installation
 
-1. Add the package to your `composer.json`:
-
-```json
-{
-    "require": {
-        "laravelplus/feature-requests": "@dev"
-    }
-}
-```
-
-2. Add the repository to your `composer.json`:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/laravelplus/feature-requests"
-        }
-    ]
-}
-```
-
-3. Register the service provider in `bootstrap/providers.php`:
-
-```php
-LaravelPlus\FeatureRequests\Providers\FeatureRequestsServiceProvider::class,
-```
-
-4. Run composer install:
+### Step 1: Install via Composer
 
 ```bash
-composer install
+composer require laravelplus/feature-requests
 ```
 
-5. Publish and run migrations:
+### Step 2: Publish Configuration
 
 ```bash
-php artisan vendor:publish --tag=feature-requests-migrations
+php artisan vendor:publish --provider="LaravelPlus\FeatureRequests\Providers\FeatureRequestsServiceProvider"
+```
+
+### Step 3: Run Migrations
+
+```bash
 php artisan migrate
 ```
 
-6. Publish configuration (optional):
+### Step 4: Create Default Categories (Optional)
 
 ```bash
-php artisan vendor:publish --tag=feature-requests-config
+php artisan feature-requests:create-default-categories
 ```
 
-7. Create default categories:
+## 📋 Configuration
 
-```bash
-php artisan tinker
->>> LaravelPlus\FeatureRequests\Facades\FeatureRequests::categories()->createDefaultCategories();
+The package configuration is located in `config/feature-requests.php`:
+
+```php
+return [
+    'middleware' => ['web', 'auth'],
+    'prefix' => 'feature-requests',
+    'user' => [
+        'model' => App\Models\User::class,
+    ],
+    'default_categories' => [
+        'User Interface',
+        'Performance',
+        'Security',
+        'API',
+        'Mobile',
+        'Integration',
+    ],
+];
 ```
 
-## Configuration
-
-The package comes with a comprehensive configuration file. You can publish it using:
-
-```bash
-php artisan vendor:publish --tag=feature-requests-config
-```
-
-Key configuration options:
-
-- **Statuses**: Define available statuses and their colors
-- **Voting**: Configure voting behavior and limits
-- **Comments**: Configure commenting behavior
-- **Categories**: Configure category settings
-- **Permissions**: Define required permissions
-- **Notifications**: Configure notification settings
-- **Cache**: Configure caching settings
-
-## Usage
+## 🎯 Usage
 
 ### Basic Usage
 
-```php
-use LaravelPlus\FeatureRequests\Facades\FeatureRequests;
+#### Creating a Feature Request
 
-// Create a feature request
-$featureRequest = FeatureRequests::featureRequests()->create([
-    'title' => 'Add dark mode support',
-    'description' => 'Users have requested dark mode support for better accessibility.',
+```php
+use LaravelPlus\FeatureRequests\Models\FeatureRequest;
+
+$featureRequest = FeatureRequest::create([
+    'title' => 'Dark Mode Support',
+    'description' => 'Add dark mode theme to the application',
     'category_id' => 1,
     'priority' => 'medium',
-    'tags' => ['ui', 'accessibility']
-]);
-
-// Vote on a feature request
-FeatureRequests::votes()->vote($featureRequest->id, 'up');
-
-// Add a comment
-FeatureRequests::comments()->create([
-    'feature_request_id' => $featureRequest->id,
-    'content' => 'This would be a great addition!'
+    'user_id' => auth()->id(),
+    'is_public' => true,
 ]);
 ```
 
-### API Usage
+#### Voting on Feature Requests
 
-The package provides comprehensive API endpoints:
+```php
+use LaravelPlus\FeatureRequests\Models\Vote;
 
-#### Feature Requests
-- `GET /api/feature-requests` - List feature requests
-- `POST /api/feature-requests` - Create feature request
-- `GET /api/feature-requests/{slug}` - Get feature request
-- `PUT /api/feature-requests/{slug}` - Update feature request
-- `DELETE /api/feature-requests/{slug}` - Delete feature request
+$vote = Vote::create([
+    'user_id' => auth()->id(),
+    'feature_request_id' => $featureRequest->id,
+    'vote_type' => 'up',
+]);
+```
 
-#### Voting
-- `POST /api/feature-requests/votes` - Vote on feature request
-- `DELETE /api/feature-requests/votes` - Remove vote
-- `GET /api/feature-requests/votes/statistics` - Get vote statistics
+#### Adding Comments
 
-#### Comments
-- `GET /api/feature-requests/comments` - List comments
-- `POST /api/feature-requests/comments` - Create comment
-- `PUT /api/feature-requests/comments/{id}` - Update comment
-- `DELETE /api/feature-requests/comments/{id}` - Delete comment
+```php
+use LaravelPlus\FeatureRequests\Models\Comment;
 
-#### Categories
-- `GET /api/feature-requests/categories` - List categories
-- `POST /api/feature-requests/categories` - Create category
-- `PUT /api/feature-requests/categories/{slug}` - Update category
-- `DELETE /api/feature-requests/categories/{slug}` - Delete category
+$comment = Comment::create([
+    'user_id' => auth()->id(),
+    'feature_request_id' => $featureRequest->id,
+    'content' => 'This would be a great addition!',
+]);
+```
+
+### Web Routes
+
+The package provides the following web routes:
+
+```php
+// Feature Requests
+GET    /feature-requests              // Index
+GET    /feature-requests/create       // Create form
+POST   /feature-requests              // Store
+GET    /feature-requests/{slug}       // Show
+GET    /feature-requests/{slug}/edit  // Edit form
+PUT    /feature-requests/{slug}       // Update
+DELETE /feature-requests/{slug}       // Destroy
+
+// Voting
+POST   /feature-requests/{slug}/vote  // Vote
+DELETE /feature-requests/{slug}/vote  // Unvote
+
+// Comments
+POST   /feature-requests/{slug}/comments  // Store comment
+PUT    /feature-requests/comments/{comment}  // Update comment
+DELETE /feature-requests/comments/{comment}  // Delete comment
+
+// Categories
+GET    /feature-requests/categories              // Index
+GET    /feature-requests/categories/create       // Create form
+POST   /feature-requests/categories              // Store
+GET    /feature-requests/categories/{slug}       // Show
+GET    /feature-requests/categories/{slug}/edit  // Edit form
+PUT    /feature-requests/categories/{slug}       // Update
+DELETE /feature-requests/categories/{slug}       // Destroy
+```
+
+### API Routes
+
+The package also provides comprehensive API routes:
+
+```php
+// Feature Requests API
+GET    /api/feature-requests                    // List all
+POST   /api/feature-requests                    // Create
+GET    /api/feature-requests/{slug}             // Show
+PUT    /api/feature-requests/{slug}             // Update
+DELETE /api/feature-requests/{slug}             // Delete
+PATCH  /api/feature-requests/{slug}/status      // Update status
+PATCH  /api/feature-requests/{slug}/assign      // Assign to user
+PATCH  /api/feature-requests/{slug}/toggle-featured // Toggle featured
+
+// Voting API
+POST   /api/feature-requests/{slug}/vote        // Vote
+DELETE /api/feature-requests/{slug}/vote        // Unvote
+GET    /api/feature-requests/votes/statistics   // Vote statistics
+
+// Comments API
+GET    /api/feature-requests/comments           // List comments
+POST   /api/feature-requests/comments           // Create comment
+PUT    /api/feature-requests/comments/{id}      // Update comment
+DELETE /api/feature-requests/comments/{id}      // Delete comment
+
+// Categories API
+GET    /api/feature-requests/categories         // List categories
+POST   /api/feature-requests/categories         // Create category
+PUT    /api/feature-requests/categories/{slug}  // Update category
+DELETE /api/feature-requests/categories/{slug}  // Delete category
+```
+
+## 🎨 Frontend Integration
 
 ### Vue.js Components
 
-The package includes ready-to-use Vue.js components:
+The package includes Vue.js components for easy frontend integration:
 
 ```vue
 <template>
-  <div>
-    <!-- Feature Request Card -->
-    <FeatureRequestCard :feature-request="featureRequest" />
-    
-    <!-- Vote Button -->
-    <VoteButton 
-      :feature-request-id="featureRequest.id"
-      :initial-vote-count="featureRequest.vote_count"
-      @vote-changed="handleVoteChanged"
-    />
-  </div>
+  <FeatureRequestsIndex />
 </template>
 
-<script setup>
-import FeatureRequestCard from '@/Components/FeatureRequestCard.vue'
-import VoteButton from '@/Components/VoteButton.vue'
+<script>
+import FeatureRequestsIndex from '@laravelplus/feature-requests/components/FeatureRequestsIndex.vue'
+
+export default {
+  components: {
+    FeatureRequestsIndex
+  }
+}
 </script>
 ```
 
-### Permissions
+### Blade Views
 
-The package uses Laravel's permission system. Make sure to create the following permissions:
+Use the included Blade views with your existing Laravel application:
 
-- `create feature requests`
-- `edit feature requests`
-- `delete feature requests`
-- `vote on feature requests`
-- `comment on feature requests`
-- `manage feature requests`
-- `manage feature request categories`
+```blade
+@extends('feature-requests::layouts.app')
 
-## Models
+@section('content')
+    <div class="container">
+        <h1>Feature Requests</h1>
+        <!-- Your content here -->
+    </div>
+@endsection
+```
 
-### FeatureRequest
+## 🔧 Models
 
-The main model for feature requests with relationships to users, categories, votes, and comments.
+### FeatureRequest Model
 
-### Vote
+```php
+use LaravelPlus\FeatureRequests\Models\FeatureRequest;
 
-Represents user votes on feature requests with support for up/down voting.
+// Scopes
+$featureRequests = FeatureRequest::published()->get();
+$featureRequests = FeatureRequest::featured()->get();
+$featureRequests = FeatureRequest::byStatus('pending')->get();
+$featureRequests = FeatureRequest::byPriority('high')->get();
+$featureRequests = FeatureRequest::byCategory($categoryId)->get();
+$featureRequests = FeatureRequest::mostVoted()->get();
+$featureRequests = FeatureRequest::recent()->get();
 
-### Category
+// Relationships
+$featureRequest->user;           // BelongsTo User
+$featureRequest->category;       // BelongsTo Category
+$featureRequest->votes;          // HasMany Vote
+$featureRequest->comments;       // HasMany Comment
+```
 
-Organizes feature requests into categories with customizable colors and icons.
+### Category Model
 
-### Comment
+```php
+use LaravelPlus\FeatureRequests\Models\Category;
 
-Allows users to comment on feature requests with support for threaded replies.
+// Scopes
+$categories = Category::active()->get();
+$categories = Category::bySlug('user-interface')->get();
+$categories = Category::withFeatureRequests()->get();
 
-## Services
+// Relationships
+$category->featureRequests;      // HasMany FeatureRequest
+```
 
-The package follows the repository pattern with dedicated services:
+### Vote Model
 
-- `FeatureRequestService`: Main service for feature request operations
-- `VoteService`: Handles voting operations
-- `CategoryService`: Manages categories
-- `CommentService`: Handles comments
+```php
+use LaravelPlus\FeatureRequests\Models\Vote;
 
-## Repositories
+// Scopes
+$votes = Vote::byType('up')->get();
+$votes = Vote::byUser($userId)->get();
+$votes = Vote::byFeatureRequest($featureRequestId)->get();
+$votes = Vote::upVotes()->get();
+$votes = Vote::downVotes()->get();
 
-Data access layer with repositories for each model:
+// Relationships
+$vote->user;                     // BelongsTo User
+$vote->featureRequest;           // BelongsTo FeatureRequest
+```
 
-- `FeatureRequestRepository`
-- `VoteRepository`
-- `CategoryRepository`
-- `CommentRepository`
+### Comment Model
 
-## Testing
+```php
+use LaravelPlus\FeatureRequests\Models\Comment;
+
+// Scopes
+$comments = Comment::approved()->get();
+$comments = Comment::pinned()->get();
+$comments = Comment::byUser($userId)->get();
+$comments = Comment::byFeatureRequest($featureRequestId)->get();
+$comments = Comment::parentComments()->get();
+$comments = Comment::replies()->get();
+$comments = Comment::recent()->get();
+
+// Relationships
+$comment->user;                  // BelongsTo User
+$comment->featureRequest;        // BelongsTo FeatureRequest
+$comment->parent;                // BelongsTo Comment (parent)
+$comment->replies;               // HasMany Comment (replies)
+```
+
+## 🧪 Testing
 
 Run the test suite:
 
 ```bash
-composer test
+# Run all tests
+./vendor/bin/phpunit
+
+# Run specific test
+./vendor/bin/phpunit tests/Unit/Models/FeatureRequestTest.php
+
+# Run with coverage
+./vendor/bin/phpunit --coverage-html coverage
 ```
 
-## Contributing
+### Test Structure
+
+```
+tests/
+├── Unit/
+│   ├── Models/
+│   │   ├── FeatureRequestTest.php
+│   │   ├── CategoryTest.php
+│   │   ├── VoteTest.php
+│   │   └── CommentTest.php
+│   ├── Services/
+│   └── Repositories/
+├── Feature/
+│   ├── FeatureRequestControllerTest.php
+│   ├── VoteControllerTest.php
+│   ├── CommentControllerTest.php
+│   └── CategoryControllerTest.php
+└── TestCase.php
+```
+
+## 🎨 Customization
+
+### Custom Views
+
+Publish and customize the views:
+
+```bash
+php artisan vendor:publish --tag=feature-requests-views
+```
+
+### Custom Styling
+
+The package uses Tailwind CSS with shadcn/ui design tokens. You can customize the styling by:
+
+1. Publishing the views
+2. Modifying the CSS classes
+3. Adding your own custom styles
+
+### Custom Middleware
+
+Add custom middleware in the configuration:
+
+```php
+'middleware' => ['web', 'auth', 'custom-middleware'],
+```
+
+## 🔒 Security
+
+- **Authentication**: All routes require authentication by default
+- **Authorization**: Users can only edit their own feature requests
+- **Validation**: Comprehensive input validation
+- **CSRF Protection**: All forms include CSRF tokens
+- **XSS Protection**: Output is properly escaped
+
+## 📊 Statistics
+
+The package provides built-in statistics:
+
+```php
+use LaravelPlus\FeatureRequests\FeatureRequests;
+
+// Get overall statistics
+$stats = FeatureRequests::getStatistics();
+
+// Get vote statistics
+$voteStats = FeatureRequests::getVoteStatistics();
+
+// Get category statistics
+$categoryStats = FeatureRequests::getCategoryStatistics();
+```
+
+## 🚀 Performance
+
+- **Eager Loading**: Relationships are properly eager loaded
+- **Database Indexing**: Optimized database indexes
+- **Caching**: Built-in caching for frequently accessed data
+- **Pagination**: Efficient pagination for large datasets
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -236,10 +387,23 @@ composer test
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📝 License
 
 This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## Support
+## 🆘 Support
 
-For support, please open an issue on the GitHub repository.
+- **Documentation**: [GitHub Wiki](https://github.com/LaravelPlus/feature-requests/wiki)
+- **Issues**: [GitHub Issues](https://github.com/LaravelPlus/feature-requests/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/LaravelPlus/feature-requests/discussions)
+
+## 🙏 Acknowledgments
+
+- Built with [Laravel](https://laravel.com)
+- UI inspired by [shadcn/ui](https://ui.shadcn.com)
+- Icons by [Lucide](https://lucide.dev)
+- Styling with [Tailwind CSS](https://tailwindcss.com)
+
+---
+
+Made with ❤️ by the LaravelPlus team

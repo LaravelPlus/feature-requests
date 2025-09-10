@@ -29,6 +29,10 @@ Route::prefix('feature-requests')->name('feature-requests.')->group(function () 
     Route::put('/{slug}', [FeatureRequestController::class, 'update'])->name('update');
     Route::delete('/{slug}', [FeatureRequestController::class, 'destroy'])->name('destroy');
     
+    // Simple vote routes
+    Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
+    Route::delete('/{slug}/vote', [VoteController::class, 'destroy'])->name('unvote');
+    
     // Feature Request Actions
     Route::patch('/{slug}/status', [FeatureRequestController::class, 'updateStatus'])->name('update-status');
     Route::patch('/{slug}/assign', [FeatureRequestController::class, 'assign'])->name('assign');

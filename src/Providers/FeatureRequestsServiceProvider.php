@@ -130,8 +130,12 @@ class FeatureRequestsServiceProvider extends ServiceProvider
             ->middleware('api')
             ->group(__DIR__ . '/../../routes/api.php');
 
-        // Load web routes
+        // Load customer web routes
         Route::middleware('web')
             ->group(__DIR__ . '/../../routes/web.php');
+
+        // Load admin routes
+        Route::middleware('web')
+            ->group(__DIR__ . '/../../routes/admin.php');
     }
 }

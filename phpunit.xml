@@ -5,25 +5,29 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-        </testsuite>
         <testsuite name="Unit">
-            <directory>tests/Unit</directory>
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
-            <directory>src</directory>
+            <directory suffix=".php">./src</directory>
         </include>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_KEY" value="base64:2fl+KtvkdWQOP4+3x9hx/5g8+3x9hx/5g8+3x9hx/5g8="/>
+        <env name="APP_KEY" value="base64:2fl+KtvkdWQOP/0hNvB8x5b8dG+QSEzN3U4kL5vH7s="/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
-        <env name="CACHE_DRIVER" value="array"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PASSWORD_BCRYPT_ROUNDS" value="4"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>

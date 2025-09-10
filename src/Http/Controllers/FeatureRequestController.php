@@ -26,7 +26,7 @@ class FeatureRequestController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource (Admin).
      */
     public function index(Request $request): View|AnonymousResourceCollection
     {
@@ -41,7 +41,24 @@ class FeatureRequestController extends Controller
             return FeatureRequestResource::collection($featureRequests);
         }
 
-        return view('feature-requests::index', compact('featureRequests', 'categories', 'statistics'));
+        return view('feature-requests::admin.index', compact('featureRequests', 'categories', 'statistics'));
+    }
+
+    /**
+     * Display a listing of public feature requests (Customer).
+     */
+    public function publicIndex(Request $request): View
+    {
+        $filters = $request->only(['status', 'category_id', 'search', 'sort_by', 'sort_direction']);
+        $filters['is_public'] = true; // Only show public requests
+        
+        $perPage = min($request->get('per_page', 12), 50);
+        
+        $featureRequests = $this->featureRequestService->paginate($perPage, $filters);
+        $categories = $this->categoryService->getActiveWithCounts();
+        $statistics = $this->featureRequestService->getPublicStatistics();
+
+        return view('feature-requests::public.index', compact('featureRequests', 'categories', 'statistics'));
     }
 
     /**
@@ -77,7 +94,7 @@ class FeatureRequestController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource (Admin).
      */
     public function show(string $slug): View|FeatureRequestResource
     {
@@ -94,7 +111,61 @@ class FeatureRequestController extends Controller
             return new FeatureRequestResource($featureRequest);
         }
 
-        return view('feature-requests::show', compact('featureRequest'));
+        return view('feature-requests::admin.show', compact('featureRequest'));
+    }
+
+    /**
+     * Display the specified public resource (Customer).
+     */
+    public function publicShow(string $slug): View
+    {
+        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        
+        if (!$featureRequest) {
+            abort(404, 'Feature request not found.');
+        }
+
+        // Check if request is public or user has access
+        if (!$featureRequest->is_public && !auth()->check()) {
+            abort(403, 'This feature request is not public.');
+        }
+
+        // Increment view count
+        $this->featureRequestService->incrementViewCount($featureRequest->id);
+
+        return view('feature-requests::public.show', compact('featureRequest'));
+    }
+
+    /**
+     * Display admin listing of the resource.
+     */
+    public function adminIndex(Request $request): View
+    {
+        $filters = $request->only(['status', 'category_id', 'search', 'sort_by', 'sort_direction']);
+        $perPage = min($request->get('per_page', 15), config('feature-requests.pagination.max_per_page', 100));
+        
+        $featureRequests = $this->featureRequestService->paginate($perPage, $filters);
+        $categories = $this->categoryService->getActiveWithCounts();
+        $statistics = $this->featureRequestService->getStatistics();
+
+        return view('feature-requests::admin.index', compact('featureRequests', 'categories', 'statistics'));
+    }
+
+    /**
+     * Display admin view of the specified resource.
+     */
+    public function adminShow(string $slug): View
+    {
+        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        
+        if (!$featureRequest) {
+            abort(404, 'Feature request not found.');
+        }
+
+        // Increment view count
+        $this->featureRequestService->incrementViewCount($featureRequest->id);
+
+        return view('feature-requests::admin.show', compact('featureRequest'));
     }
 
     /**

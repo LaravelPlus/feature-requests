@@ -3,39 +3,41 @@
 use Illuminate\Support\Facades\Route;
 use LaravelPlus\FeatureRequests\Http\Controllers\FeatureRequestController;
 use LaravelPlus\FeatureRequests\Http\Controllers\CategoryController;
+use LaravelPlus\FeatureRequests\Http\Controllers\VoteController;
+use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
-| Feature Requests Web Routes
+| Feature Requests Customer Routes
 |--------------------------------------------------------------------------
 |
-| Here are the web routes for the feature requests package. These routes
-| are loaded by the RouteServiceProvider within a group which is assigned
-| the "web" middleware group.
+| Here are the customer-facing routes for the feature requests package.
+| These routes allow customers to view, vote, and comment on feature requests.
 |
 */
 
 Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web'])->group(function () {
     
-    // Feature Requests
-    Route::get('/', [FeatureRequestController::class, 'index'])->name('index');
-    Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
-    Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
+    // Public Feature Requests (Customer View)
+    Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
+    Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
     
-    Route::get('/{slug}', [FeatureRequestController::class, 'show'])->name('show');
-    Route::get('/{slug}/edit', [FeatureRequestController::class, 'edit'])->name('edit');
-    Route::put('/{slug}', [FeatureRequestController::class, 'update'])->name('update');
-    Route::delete('/{slug}', [FeatureRequestController::class, 'destroy'])->name('destroy');
+    // Voting (Requires authentication)
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
+        Route::delete('/{slug}/vote', [VoteController::class, 'destroy'])->name('unvote');
+    });
     
-    // Categories
+    // Comments (Requires authentication)
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/{slug}/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+        Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    });
+    
+    // Public Categories (Read-only)
     Route::prefix('categories')->name('categories.')->group(function () {
-        Route::get('/', [CategoryController::class, 'index'])->name('index');
-        Route::get('/create', [CategoryController::class, 'create'])->name('create');
-        Route::post('/', [CategoryController::class, 'store'])->name('store');
-        
-        Route::get('/{slug}', [CategoryController::class, 'show'])->name('show');
-        Route::get('/{slug}/edit', [CategoryController::class, 'edit'])->name('edit');
-        Route::put('/{slug}', [CategoryController::class, 'update'])->name('update');
-        Route::delete('/{slug}', [CategoryController::class, 'destroy'])->name('destroy');
+        Route::get('/', [CategoryController::class, 'publicIndex'])->name('index');
+        Route::get('/{slug}', [CategoryController::class, 'publicShow'])->name('show');
     });
 });
