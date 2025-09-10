@@ -22,6 +22,81 @@ class VoteController extends Controller
     }
 
     /**
+     * Store a vote on a feature request (alias for vote method).
+     */
+    public function store(Request $request, string $slug): JsonResponse
+    {
+        // Get the feature request by slug
+        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        
+        if (!$featureRequest) {
+            return response()->json([
+                'message' => 'Feature request not found.'
+            ], 404);
+        }
+
+        if (!$this->voteService->canVoteOn($featureRequest->id)) {
+            return response()->json([
+                'message' => 'You cannot vote on this feature request.'
+            ], 403);
+        }
+
+        try {
+            $vote = $this->voteService->vote(
+                $featureRequest->id,
+                'up', // Default to up vote for simple voting
+                null
+            );
+
+            $statistics = $this->voteService->getVoteStatistics($featureRequest->id);
+
+            return response()->json([
+                'message' => 'Vote recorded successfully.',
+                'data' => [
+                    'vote' => $vote,
+                    'statistics' => $statistics
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Remove a vote from a feature request (alias for removeVote method).
+     */
+    public function destroy(Request $request, string $slug): JsonResponse
+    {
+        // Get the feature request by slug
+        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        
+        if (!$featureRequest) {
+            return response()->json([
+                'message' => 'Feature request not found.'
+            ], 404);
+        }
+
+        try {
+            $this->voteService->removeVote($featureRequest->id);
+
+            $statistics = $this->voteService->getVoteStatistics($featureRequest->id);
+
+            return response()->json([
+                'message' => 'Vote removed successfully.',
+                'data' => [
+                    'statistics' => $statistics
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
      * Vote on a feature request.
      */
     public function vote(VoteRequest $request): JsonResponse
