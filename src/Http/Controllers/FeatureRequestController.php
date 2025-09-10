@@ -72,6 +72,33 @@ class FeatureRequestController extends Controller
     }
 
     /**
+     * Display the roadmap of feature requests (Customer).
+     */
+    public function roadmap(Request $request): View
+    {
+        $filters = $request->only(['category_id', 'search']);
+        $filters['is_public'] = true; // Only show public requests
+        
+        // Get feature requests grouped by status
+        $featureRequests = $this->featureRequestService->getForRoadmap($filters);
+        $categories = $this->categoryService->getActiveWithCounts();
+        $statistics = $this->featureRequestService->getPublicStatistics();
+
+        // Add vote information for each feature request
+        if (auth()->check()) {
+            foreach ($featureRequests as $status => $requests) {
+                $featureRequests[$status] = $requests->map(function ($featureRequest) {
+                    $featureRequest->user_has_voted = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->hasUserVoted($featureRequest->id);
+                    $featureRequest->user_vote_type = app(\LaravelPlus\FeatureRequests\Services\VoteService::class)->getUserVoteType($featureRequest->id);
+                    return $featureRequest;
+                });
+            }
+        }
+
+        return view('feature-requests::public.roadmap', compact('featureRequests', 'categories', 'statistics'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create(): View

@@ -243,6 +243,22 @@ class FeatureRequestService
     }
 
     /**
+     * Get feature requests grouped by status for roadmap.
+     */
+    public function getForRoadmap(array $filters = []): array
+    {
+        $cacheKey = 'feature_requests_roadmap_' . md5(serialize($filters));
+        
+        if (config('feature-requests.cache.enabled', true)) {
+            return Cache::tags(['feature-requests'])->remember($cacheKey, config('feature-requests.cache.ttl', 3600), function () use ($filters) {
+                return $this->featureRequestRepository->getForRoadmap($filters);
+            });
+        }
+
+        return $this->featureRequestRepository->getForRoadmap($filters);
+    }
+
+    /**
      * Get feature requests that need attention.
      */
     public function getNeedingAttention(): Collection

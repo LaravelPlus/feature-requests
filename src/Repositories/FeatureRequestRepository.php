@@ -282,6 +282,44 @@ class FeatureRequestRepository
     }
 
     /**
+     * Get feature requests grouped by status for roadmap.
+     */
+    public function getForRoadmap(array $filters = []): array
+    {
+        $query = $this->model->newQuery();
+
+        // Apply filters
+        if (isset($filters['category_id'])) {
+            $query->category($filters['category_id']);
+        }
+
+        if (isset($filters['search'])) {
+            $query->search($filters['search']);
+        }
+
+        if (isset($filters['is_public'])) {
+            $query->where('is_public', $filters['is_public']);
+        }
+
+        // Get feature requests grouped by status
+        $featureRequests = $query->with(['user', 'category'])
+                                ->orderBy('vote_count', 'desc')
+                                ->orderBy('created_at', 'desc')
+                                ->get()
+                                ->groupBy('status');
+
+        // Ensure all statuses are present (excluding rejected and completed from roadmap)
+        $statuses = ['pending', 'under_review', 'in_progress'];
+        $result = [];
+        
+        foreach ($statuses as $status) {
+            $result[$status] = $featureRequests->get($status, collect());
+        }
+
+        return $result;
+    }
+
+    /**
      * Get feature requests that need attention.
      */
     public function getNeedingAttention(): Collection

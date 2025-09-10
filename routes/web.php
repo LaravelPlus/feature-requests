@@ -21,6 +21,9 @@ Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web',
     // Feature Requests (Customer View) - All require authentication
     Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
     
+    // Roadmap - Must come before /{slug}
+    Route::get('/roadmap', [FeatureRequestController::class, 'roadmap'])->name('roadmap');
+    
     // Create Feature Request - Must come before /{slug}
     Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
     Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
