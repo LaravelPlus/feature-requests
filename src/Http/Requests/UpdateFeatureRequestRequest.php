@@ -1,0 +1,84 @@
+<?php
+
+namespace LaravelPlus\FeatureRequests\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateFeatureRequestRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return auth()->check();
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     */
+    public function rules(): array
+    {
+        return [
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|required|string|min:10',
+            'status' => 'sometimes|in:pending,under_review,planned,in_progress,completed,rejected',
+            'priority' => 'sometimes|in:low,medium,high,critical',
+            'category_id' => 'sometimes|nullable|exists:feature_request_categories,id',
+            'assigned_to' => 'sometimes|nullable|exists:users,id',
+            'tags' => 'sometimes|nullable|array',
+            'tags.*' => 'string|max:50',
+            'is_public' => 'sometimes|boolean',
+            'is_featured' => 'sometimes|boolean',
+            'due_date' => 'sometimes|nullable|date|after:today',
+            'estimated_effort' => 'sometimes|nullable|integer|min:1|max:1000',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'The title field is required.',
+            'title.max' => 'The title may not be greater than 255 characters.',
+            'description.required' => 'The description field is required.',
+            'description.min' => 'The description must be at least 10 characters.',
+            'status.in' => 'The status must be one of: pending, under_review, planned, in_progress, completed, rejected.',
+            'priority.in' => 'The priority must be one of: low, medium, high, critical.',
+            'category_id.exists' => 'The selected category is invalid.',
+            'assigned_to.exists' => 'The selected user is invalid.',
+            'tags.array' => 'The tags must be an array.',
+            'tags.*.string' => 'Each tag must be a string.',
+            'tags.*.max' => 'Each tag may not be greater than 50 characters.',
+            'is_public.boolean' => 'The public field must be true or false.',
+            'is_featured.boolean' => 'The featured field must be true or false.',
+            'due_date.date' => 'The due date must be a valid date.',
+            'due_date.after' => 'The due date must be a date after today.',
+            'estimated_effort.integer' => 'The estimated effort must be an integer.',
+            'estimated_effort.min' => 'The estimated effort must be at least 1 hour.',
+            'estimated_effort.max' => 'The estimated effort may not be greater than 1000 hours.',
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'title' => 'title',
+            'description' => 'description',
+            'status' => 'status',
+            'priority' => 'priority',
+            'category_id' => 'category',
+            'assigned_to' => 'assigned user',
+            'tags' => 'tags',
+            'is_public' => 'public visibility',
+            'is_featured' => 'featured status',
+            'due_date' => 'due date',
+            'estimated_effort' => 'estimated effort',
+        ];
+    }
+}
