@@ -68,7 +68,12 @@ class FeatureRequestController extends Controller
     {
         $categories = $this->categoryService->getActive();
         
-        return view('feature-requests::admin.create', compact('categories'));
+        // Check if this is the admin route or customer route
+        if (request()->routeIs('admin.feature-requests.create')) {
+            return view('feature-requests::admin.create', compact('categories'));
+        }
+        
+        return view('feature-requests::public.create', compact('categories'));
     }
 
     /**

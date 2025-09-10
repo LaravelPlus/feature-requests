@@ -34,24 +34,24 @@
                 </form>
             </div>
             
-            <!-- Submit Button -->
-            @auth
-                <a href="{{ route('admin.feature-requests.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Submit Request
-                </a>
-            @else
-                <a href="{{ route('login') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Submit Request
-                </a>
-            @endauth
+                    <!-- Submit Button -->
+                    @auth
+                        <a href="{{ route('feature-requests.create') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Submit Request
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Submit Request
+                        </a>
+                    @endauth
         </div>
     </div>
 
@@ -148,7 +148,7 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">No feature requests found</h3>
                 <p class="text-gray-500 mb-6">Be the first to submit a feature request!</p>
                 @auth
-                    <a href="{{ route('admin.feature-requests.create') }}" 
+                    <a href="{{ route('feature-requests.create') }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>

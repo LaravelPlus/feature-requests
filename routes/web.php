@@ -22,6 +22,12 @@ Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web']
     Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
     Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
     
+    // Create Feature Request (Requires authentication)
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
+        Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
+    });
+    
     // Voting (Requires authentication)
     Route::middleware(['auth'])->group(function () {
         Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
