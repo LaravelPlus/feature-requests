@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Http\Controllers;
 
 use LaravelPlus\FeatureRequests\Services\CommentService;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\View\View;
 
-class CommentController extends Controller
+final class CommentController extends Controller
 {
     protected CommentService $commentService;
     protected FeatureRequestService $featureRequestService;

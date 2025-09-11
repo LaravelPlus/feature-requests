@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Repositories;
 
 use LaravelPlus\FeatureRequests\Models\Vote;
 use Illuminate\Database\Eloquent\Collection;
 
-class VoteRepository
+final class VoteRepository
 {
     protected Vote $model;
 
@@ -188,6 +190,7 @@ class VoteRepository
         $downVotes = $this->getDownVoteCount($featureRequestId);
 
         return [
+            'total_votes' => $total,
             'total' => $total,
             'up_votes' => $upVotes,
             'down_votes' => $downVotes,

@@ -35,6 +35,16 @@
                 </form>
             </div>
             
+            <div class="flex gap-3">
+                <!-- Changelog Button -->
+                <a href="{{ route('feature-requests.changelog') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Changelog
+                </a>
+                
                 <!-- Submit Button -->
                 <a href="{{ route('feature-requests.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
@@ -43,6 +53,7 @@
                     </svg>
                     Submit Request
                 </a>
+            </div>
         </div>
         </div>
     </div>
@@ -52,7 +63,7 @@
         <div class="space-y-6">
             @forelse($featureRequests as $request)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 overflow-hidden group cursor-pointer"
-                     onclick="window.location.href='{{ route('feature-requests.show', $request->slug) }}'">
+                     onclick="window.location.href='{{ route('feature-requests.show', $request->slug ?? $request->uuid) }}'">
                     <div class="flex">
                         <!-- Left Side - Voting Section -->
                         <div class="flex flex-col items-center justify-center p-4 border-r border-gray-100 bg-gray-50">
@@ -88,7 +99,7 @@
                                 <!-- Inline Vote Buttons -->
                                 <div class="flex items-center space-x-2">
                                     <!-- Thumbs Up Button -->
-                                    <form action="{{ route('feature-requests.vote', $request->slug) }}" method="POST" onclick="event.stopPropagation()">
+                                    <form action="{{ route('feature-requests.vote', $request->slug ?? $request->uuid) }}" method="POST" onclick="event.stopPropagation()">
                                         @csrf
                                         <input type="hidden" name="vote_type" value="up">
                                         <button type="submit" 
@@ -106,7 +117,7 @@
                                     </div>
 
                                     <!-- Thumbs Down Button -->
-                                    <form action="{{ route('feature-requests.vote', $request->slug) }}" method="POST" onclick="event.stopPropagation()">
+                                    <form action="{{ route('feature-requests.vote', $request->slug ?? $request->uuid) }}" method="POST" onclick="event.stopPropagation()">
                                         @csrf
                                         <input type="hidden" name="vote_type" value="down">
                                         <button type="submit" 

@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Repositories;
 
 use LaravelPlus\FeatureRequests\Models\FeatureRequest;
+use LaravelPlus\FeatureRequests\Contracts\Repositories\FeatureRequestRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class FeatureRequestRepository
+final class FeatureRequestRepository implements FeatureRequestRepositoryInterface
 {
     protected FeatureRequest $model;
 
@@ -49,6 +52,10 @@ class FeatureRequestRepository
 
         if (isset($filters['assigned_to'])) {
             $query->where('assigned_to', $filters['assigned_to']);
+        }
+
+        if (isset($filters['exclude_completed']) && $filters['exclude_completed']) {
+            $query->where('status', '!=', 'completed');
         }
 
         // Apply sorting
@@ -123,6 +130,16 @@ class FeatureRequestRepository
     {
         return $this->model->with(['user', 'category', 'assignedTo', 'votes.user', 'comments.user'])
                           ->where('slug', $slug)
+                          ->first();
+    }
+
+    /**
+     * Find a feature request by UUID.
+     */
+    public function findByUuid(string $uuid): ?FeatureRequest
+    {
+        return $this->model->with(['user', 'category', 'assignedTo', 'votes.user', 'comments.user'])
+                          ->where('uuid', $uuid)
                           ->first();
     }
 
@@ -317,6 +334,33 @@ class FeatureRequestRepository
         }
 
         return $result;
+    }
+
+    /**
+     * Get completed feature requests for changelog.
+     */
+    public function getForChangelog(array $filters = []): Collection
+    {
+        $query = $this->model->newQuery();
+
+        // Apply filters
+        if (isset($filters['category_id'])) {
+            $query->category($filters['category_id']);
+        }
+
+        if (isset($filters['search'])) {
+            $query->search($filters['search']);
+        }
+
+        if (isset($filters['is_public'])) {
+            $query->where('is_public', $filters['is_public']);
+        }
+
+        // Only get completed feature requests, ordered by completion date (updated_at)
+        return $query->where('status', 'completed')
+                    ->with(['user', 'category'])
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
     }
 
     /**

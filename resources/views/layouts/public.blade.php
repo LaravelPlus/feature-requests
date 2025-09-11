@@ -61,6 +61,10 @@
                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('feature-requests.roadmap') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                                 Roadmap
                             </a>
+                            <a href="{{ route('feature-requests.changelog') }}" 
+                               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('feature-requests.changelog') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                                Changelog
+                            </a>
                         </div>
                     </div>
 

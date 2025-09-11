@@ -1,15 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Services;
 
 use LaravelPlus\FeatureRequests\Repositories\VoteRepository;
+use LaravelPlus\FeatureRequests\Contracts\Services\VoteServiceInterface;
 use LaravelPlus\FeatureRequests\Repositories\FeatureRequestRepository;
 use LaravelPlus\FeatureRequests\Models\Vote;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class VoteService
+final class VoteService implements VoteServiceInterface
 {
     protected VoteRepository $voteRepository;
     protected FeatureRequestRepository $featureRequestRepository;
@@ -20,6 +25,46 @@ class VoteService
     ) {
         $this->voteRepository = $voteRepository;
         $this->featureRequestRepository = $featureRequestRepository;
+    }
+
+    /**
+     * Get all votes with pagination.
+     */
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        return $this->voteRepository->paginate($perPage, $filters);
+    }
+
+    /**
+     * Find a vote by ID.
+     */
+    public function find(int $id): ?Vote
+    {
+        return $this->voteRepository->find($id);
+    }
+
+    /**
+     * Create a new vote.
+     */
+    public function create(array $data): Vote
+    {
+        return $this->voteRepository->create($data);
+    }
+
+    /**
+     * Update a vote.
+     */
+    public function update(int $id, array $data): bool
+    {
+        return $this->voteRepository->update($id, $data);
+    }
+
+    /**
+     * Delete a vote.
+     */
+    public function delete(int $id): bool
+    {
+        return $this->voteRepository->delete($id);
     }
 
     /**
@@ -108,7 +153,7 @@ class VoteService
     /**
      * Get votes for a feature request.
      */
-    public function getVotes(int $featureRequestId)
+    public function getVotes(int $featureRequestId): Collection
     {
         return $this->voteRepository->getByFeatureRequest($featureRequestId);
     }
@@ -116,7 +161,7 @@ class VoteService
     /**
      * Get up votes for a feature request.
      */
-    public function getUpVotes(int $featureRequestId)
+    public function getUpVotes(int $featureRequestId): Collection
     {
         return $this->voteRepository->getUpVotesByFeatureRequest($featureRequestId);
     }
@@ -124,7 +169,7 @@ class VoteService
     /**
      * Get down votes for a feature request.
      */
-    public function getDownVotes(int $featureRequestId)
+    public function getDownVotes(int $featureRequestId): Collection
     {
         return $this->voteRepository->getDownVotesByFeatureRequest($featureRequestId);
     }
@@ -132,7 +177,7 @@ class VoteService
     /**
      * Get votes by user.
      */
-    public function getVotesByUser(int $userId)
+    public function getVotesByUser(int $userId): Collection
     {
         return $this->voteRepository->getByUser($userId);
     }
@@ -140,7 +185,7 @@ class VoteService
     /**
      * Get up votes by user.
      */
-    public function getUpVotesByUser(int $userId)
+    public function getUpVotesByUser(int $userId): Collection
     {
         return $this->voteRepository->getUpVotesByUser($userId);
     }
@@ -148,7 +193,7 @@ class VoteService
     /**
      * Get down votes by user.
      */
-    public function getDownVotesByUser(int $userId)
+    public function getDownVotesByUser(int $userId): Collection
     {
         return $this->voteRepository->getDownVotesByUser($userId);
     }
@@ -216,7 +261,7 @@ class VoteService
     /**
      * Get most voted feature requests.
      */
-    public function getMostVotedFeatureRequests(int $limit = 10)
+    public function getMostVotedFeatureRequests(int $limit = 10): Collection
     {
         return $this->voteRepository->getMostVotedFeatureRequests($limit);
     }

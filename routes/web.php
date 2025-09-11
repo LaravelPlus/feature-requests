@@ -16,7 +16,7 @@ use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
 |
 */
 
-Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web', 'auth'])->group(function () {
+Route::prefix('feature-requests')->name('feature-requests.')->middleware(['auth'])->group(function () {
     
     // Feature Requests (Customer View) - All require authentication
     Route::get('/', [FeatureRequestController::class, 'publicIndex'])->name('index');
@@ -24,18 +24,21 @@ Route::prefix('feature-requests')->name('feature-requests.')->middleware(['web',
     // Roadmap - Must come before /{slug}
     Route::get('/roadmap', [FeatureRequestController::class, 'roadmap'])->name('roadmap');
     
+    // Changelog - Must come before /{slug}
+    Route::get('/changelog', [FeatureRequestController::class, 'changelog'])->name('changelog');
+    
     // Create Feature Request - Must come before /{slug}
     Route::get('/create', [FeatureRequestController::class, 'create'])->name('create');
     Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
     
-    Route::get('/{slug}', [FeatureRequestController::class, 'publicShow'])->name('show');
+    Route::get('/{identifier}', [FeatureRequestController::class, 'publicShow'])->name('show')->where('identifier', '[a-zA-Z0-9\-_]+');
     
     // Voting
-    Route::post('/{slug}/vote', [VoteController::class, 'store'])->name('vote');
-    Route::delete('/{slug}/vote', [VoteController::class, 'destroy'])->name('unvote');
+    Route::post('/{identifier}/vote', [VoteController::class, 'store'])->name('vote')->where('identifier', '[a-zA-Z0-9\-_]+');
+    Route::delete('/{identifier}/vote', [VoteController::class, 'destroy'])->name('unvote')->where('identifier', '[a-zA-Z0-9\-_]+');
     
     // Comments
-    Route::post('/{slug}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/{identifier}/comments', [CommentController::class, 'store'])->name('comments.store')->where('identifier', '[a-zA-Z0-9\-_]+');
     Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     

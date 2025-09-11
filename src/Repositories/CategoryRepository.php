@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Repositories;
 
 use LaravelPlus\FeatureRequests\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
 
-class CategoryRepository
+final class CategoryRepository
 {
     protected Category $model;
 

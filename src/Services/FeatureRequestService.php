@@ -1,18 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Services;
 
 use LaravelPlus\FeatureRequests\Repositories\FeatureRequestRepository;
 use LaravelPlus\FeatureRequests\Repositories\VoteRepository;
 use LaravelPlus\FeatureRequests\Repositories\CommentRepository;
+use LaravelPlus\FeatureRequests\Contracts\Services\FeatureRequestServiceInterface;
 use LaravelPlus\FeatureRequests\Models\FeatureRequest;
+use LaravelPlus\FeatureRequests\DTOs\CreateFeatureRequestDTO;
+use LaravelPlus\FeatureRequests\DTOs\UpdateFeatureRequestDTO;
+use LaravelPlus\FeatureRequests\DTOs\FeatureRequestFiltersDTO;
+use LaravelPlus\FeatureRequests\DTOs\FeatureRequestListDTO;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-class FeatureRequestService
+final class FeatureRequestService implements FeatureRequestServiceInterface
 {
     protected FeatureRequestRepository $featureRequestRepository;
     protected VoteRepository $voteRepository;
@@ -66,6 +73,14 @@ class FeatureRequestService
     public function findBySlug(string $slug): ?FeatureRequest
     {
         return $this->featureRequestRepository->findBySlug($slug);
+    }
+
+    /**
+     * Find a feature request by UUID.
+     */
+    public function findByUuid(string $uuid): ?FeatureRequest
+    {
+        return $this->featureRequestRepository->findByUuid($uuid);
     }
 
     /**
@@ -256,6 +271,22 @@ class FeatureRequestService
         }
 
         return $this->featureRequestRepository->getForRoadmap($filters);
+    }
+
+    /**
+     * Get completed feature requests for changelog.
+     */
+    public function getForChangelog(array $filters = []): Collection
+    {
+        $cacheKey = 'feature_requests_changelog_' . md5(serialize($filters));
+        
+        if (config('feature-requests.cache.enabled', true)) {
+            return Cache::tags(['feature-requests'])->remember($cacheKey, config('feature-requests.cache.ttl', 3600), function () use ($filters) {
+                return $this->featureRequestRepository->getForChangelog($filters);
+            });
+        }
+
+        return $this->featureRequestRepository->getForChangelog($filters);
     }
 
     /**

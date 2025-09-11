@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Services;
 
 use LaravelPlus\FeatureRequests\Repositories\CategoryRepository;
+use LaravelPlus\FeatureRequests\Contracts\Services\CategoryServiceInterface;
 use LaravelPlus\FeatureRequests\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class CategoryService
+final class CategoryService implements CategoryServiceInterface
 {
     protected CategoryRepository $categoryRepository;
 
@@ -17,20 +21,21 @@ class CategoryService
     }
 
     /**
-     * Get all categories.
+     * Get all categories with pagination.
      */
-    public function all(): Collection
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        $cacheKey = 'feature_request_categories_all';
-        
-        if (config('feature-requests.cache.enabled', true)) {
-            return Cache::tags(['feature-requests'])->remember($cacheKey, config('feature-requests.cache.ttl', 3600), function () {
-                return $this->categoryRepository->all();
-            });
-        }
-
-        return $this->categoryRepository->all();
+        return $this->categoryRepository->paginate($perPage, $filters);
     }
+
+    /**
+     * Find a category by ID.
+     */
+    public function find(int $id): ?Category
+    {
+        return $this->categoryRepository->find($id);
+    }
+
 
     /**
      * Get active categories.
@@ -46,14 +51,6 @@ class CategoryService
         }
 
         return $this->categoryRepository->getActive();
-    }
-
-    /**
-     * Find a category by ID.
-     */
-    public function find(int $id): ?Category
-    {
-        return $this->categoryRepository->find($id);
     }
 
     /**

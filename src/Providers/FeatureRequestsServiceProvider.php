@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Providers;
 
 use Illuminate\Support\ServiceProvider;
@@ -12,6 +14,14 @@ use LaravelPlus\FeatureRequests\Services\FeatureRequestService;
 use LaravelPlus\FeatureRequests\Services\VoteService;
 use LaravelPlus\FeatureRequests\Services\CategoryService;
 use LaravelPlus\FeatureRequests\Services\CommentService;
+use LaravelPlus\FeatureRequests\Contracts\Repositories\FeatureRequestRepositoryInterface;
+use LaravelPlus\FeatureRequests\Contracts\Repositories\VoteRepositoryInterface;
+use LaravelPlus\FeatureRequests\Contracts\Repositories\CategoryRepositoryInterface;
+use LaravelPlus\FeatureRequests\Contracts\Repositories\CommentRepositoryInterface;
+use LaravelPlus\FeatureRequests\Contracts\Services\FeatureRequestServiceInterface;
+use LaravelPlus\FeatureRequests\Contracts\Services\VoteServiceInterface;
+use LaravelPlus\FeatureRequests\Contracts\Services\CategoryServiceInterface;
+use LaravelPlus\FeatureRequests\Contracts\Services\CommentServiceInterface;
 use LaravelPlus\FeatureRequests\Models\FeatureRequest;
 use LaravelPlus\FeatureRequests\Models\Vote;
 use LaravelPlus\FeatureRequests\Models\Category;
@@ -46,6 +56,16 @@ class FeatureRequestsServiceProvider extends ServiceProvider
         $this->app->bind(CommentRepository::class, function ($app) {
             return new CommentRepository($app->make(Comment::class));
         });
+
+        // Bind interfaces to implementations
+        $this->app->bind(FeatureRequestRepositoryInterface::class, FeatureRequestRepository::class);
+        $this->app->bind(VoteRepositoryInterface::class, VoteRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
+        $this->app->bind(FeatureRequestServiceInterface::class, FeatureRequestService::class);
+        $this->app->bind(VoteServiceInterface::class, VoteService::class);
+        $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
+        $this->app->bind(CommentServiceInterface::class, CommentService::class);
 
         // Register services
         $this->app->bind(FeatureRequestService::class, function ($app) {
@@ -106,6 +126,13 @@ class FeatureRequestsServiceProvider extends ServiceProvider
 
         // Load translations
         $this->loadTranslationsFrom(__DIR__ . '/../../resources/lang', 'feature-requests');
+
+        // Register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \LaravelPlus\FeatureRequests\Console\Commands\UpdateVoteCountsCommand::class,
+            ]);
+        }
 
         // Publish translations
         $this->publishes([

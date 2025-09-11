@@ -5,31 +5,20 @@
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="py-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Feature Requests Roadmap</h1>
-                        <p class="mt-2 text-gray-600">Track the progress of feature requests from idea to completion</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('feature-requests.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                            </svg>
-                            All Requests
-                        </a>
-                        <a href="{{ route('feature-requests.create') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Submit Request
-                        </a>
-                    </div>
-                </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Feature Requests Roadmap</h1>
+                <p class="mt-2 text-gray-600">Track the progress of feature requests from idea to completion</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{{ route('feature-requests.create') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Submit Request
+                </a>
             </div>
         </div>
     </div>
@@ -103,7 +92,7 @@
                     <div class="p-4 space-y-3 min-h-96">
                         @forelse($featureRequests[$status] as $request)
                             <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors cursor-pointer group"
-                                 onclick="window.location.href='{{ route('feature-requests.show', $request->slug) }}'">
+                                 onclick="window.location.href='{{ route('feature-requests.show', $request->slug ?? $request->uuid) }}'">
                                 
                                 <!-- Title -->
                                 <h4 class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
@@ -159,29 +148,6 @@
                     </div>
                 </div>
             @endforeach
-        </div>
-
-        <!-- Statistics -->
-        <div class="mt-8 bg-white rounded-lg shadow-sm border p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Roadmap Statistics</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900">{{ $statistics['total'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">Total Requests</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600">{{ $statistics['in_progress'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">In Progress</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-green-600">{{ $statistics['completed'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">Completed</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-600">{{ $statistics['total_votes'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">Total Votes</div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

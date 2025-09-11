@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,6 +48,29 @@ class Vote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(config('auth.providers.users.model'), 'user_id');
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // Update vote counts when a vote is created
+        static::created(function (Vote $vote) {
+            $vote->featureRequest->updateVoteCount();
+        });
+
+        // Update vote counts when a vote is updated
+        static::updated(function (Vote $vote) {
+            $vote->featureRequest->updateVoteCount();
+        });
+
+        // Update vote counts when a vote is deleted
+        static::deleted(function (Vote $vote) {
+            $vote->featureRequest->updateVoteCount();
+        });
     }
 
     /**

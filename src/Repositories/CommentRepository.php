@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Repositories;
 
 use LaravelPlus\FeatureRequests\Models\Comment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class CommentRepository
+final class CommentRepository
 {
     protected Comment $model;
 

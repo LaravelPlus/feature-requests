@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Http\Controllers;
 
 use LaravelPlus\FeatureRequests\Services\VoteService;
@@ -8,7 +10,7 @@ use LaravelPlus\FeatureRequests\Http\Requests\VoteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class VoteController extends Controller
+final class VoteController extends Controller
 {
     protected VoteService $voteService;
     protected FeatureRequestService $featureRequestService;

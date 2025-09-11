@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Services;
 
 use LaravelPlus\FeatureRequests\Repositories\CommentRepository;
+use LaravelPlus\FeatureRequests\Contracts\Services\CommentServiceInterface;
 use LaravelPlus\FeatureRequests\Repositories\FeatureRequestRepository;
 use LaravelPlus\FeatureRequests\Models\Comment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 
-class CommentService
+final class CommentService implements CommentServiceInterface
 {
     protected CommentRepository $commentRepository;
     protected FeatureRequestRepository $featureRequestRepository;
@@ -30,13 +33,6 @@ class CommentService
         return $this->commentRepository->paginate($perPage, $filters);
     }
 
-    /**
-     * Get all comments.
-     */
-    public function all(): Collection
-    {
-        return $this->commentRepository->all();
-    }
 
     /**
      * Find a comment by ID.

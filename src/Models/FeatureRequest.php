@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +20,7 @@ class FeatureRequest extends Model
     protected $table = 'feature_requests';
 
     protected $fillable = [
+        'uuid',
         'title',
         'description',
         'additional_info',
@@ -57,6 +60,20 @@ class FeatureRequest extends Model
         'deleted_at',
         'due_date',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Str::uuid();
+            }
+        });
+    }
 
     /**
      * Get the options for generating the slug.

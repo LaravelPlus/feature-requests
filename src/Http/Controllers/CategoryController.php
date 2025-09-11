@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Http\Controllers;
 
 use LaravelPlus\FeatureRequests\Services\CategoryService;
@@ -11,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\View\View;
 
-class CategoryController extends Controller
+final class CategoryController extends Controller
 {
     protected CategoryService $categoryService;
 

@@ -243,12 +243,12 @@
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 top-full mt-1 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                                <a href="{{ route('feature-requests.show', $request->slug) }}" 
+                                <a href="{{ route('feature-requests.show', $request->slug ?? $request->uuid) }}" 
                                    class="flex items-center px-3 py-2 text-sm text-foreground hover:bg-accent">
                                     <i data-lucide="eye" class="mr-2 h-4 w-4"></i>
                                     View Details
                                 </a>
-                                <a href="{{ route('feature-requests.edit', $request->slug) }}" 
+                                <a href="{{ route('feature-requests.edit', $request->slug ?? $request->uuid) }}" 
                                    class="flex items-center px-3 py-2 text-sm text-foreground hover:bg-accent">
                                     <i data-lucide="edit" class="mr-2 h-4 w-4"></i>
                                     Edit
@@ -263,7 +263,7 @@
                     </div>
 
                     <h3 class="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                        <a href="{{ route('feature-requests.show', $request->slug) }}">{{ $request->title }}</a>
+                        <a href="{{ route('feature-requests.show', $request->slug ?? $request->uuid) }}">{{ $request->title }}</a>
                     </h3>
                     
                     <p class="text-sm text-muted-foreground line-clamp-3 mb-4">{{ Str::limit($request->description, 120) }}</p>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaravelPlus\FeatureRequests\Http\Controllers;
 
 use LaravelPlus\FeatureRequests\Services\FeatureRequestService;
@@ -13,7 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\View\View;
 
-class FeatureRequestController extends Controller
+final class FeatureRequestController extends Controller
 {
     protected FeatureRequestService $featureRequestService;
     protected CategoryService $categoryService;
@@ -53,6 +55,11 @@ class FeatureRequestController extends Controller
         $filters = $request->only(['status', 'category_id', 'search', 'sort_by', 'sort_direction']);
         $filters['is_public'] = true; // Only show public requests
         
+        // Only show active feature requests (exclude completed) unless specifically filtered
+        if (!isset($filters['status'])) {
+            $filters['exclude_completed'] = true;
+        }
+        
         $perPage = min($request->get('per_page', 12), 50);
         
         $featureRequests = $this->featureRequestService->paginate($perPage, $filters);
@@ -82,7 +89,6 @@ class FeatureRequestController extends Controller
         // Get feature requests grouped by status
         $featureRequests = $this->featureRequestService->getForRoadmap($filters);
         $categories = $this->categoryService->getActiveWithCounts();
-        $statistics = $this->featureRequestService->getPublicStatistics();
 
         // Add vote information for each feature request
         if (auth()->check()) {
@@ -95,7 +101,24 @@ class FeatureRequestController extends Controller
             }
         }
 
-        return view('feature-requests::public.roadmap', compact('featureRequests', 'categories', 'statistics'));
+        return view('feature-requests::public.roadmap', compact('featureRequests', 'categories'));
+    }
+
+    /**
+     * Display the changelog of completed feature requests.
+     */
+    public function changelog(Request $request): View
+    {
+        $filters = $request->only(['category_id', 'search']);
+        $filters['is_public'] = true; // Only show public requests
+        $filters['status'] = 'completed'; // Only show completed requests
+        
+        // Get completed feature requests for changelog
+        $featureRequests = $this->featureRequestService->getForChangelog($filters);
+        $categories = $this->categoryService->getActiveWithCounts();
+        $statistics = $this->featureRequestService->getPublicStatistics();
+
+        return view('feature-requests::public.changelog', compact('featureRequests', 'categories', 'statistics'));
     }
 
     /**
@@ -159,9 +182,11 @@ class FeatureRequestController extends Controller
     /**
      * Display the specified public resource (Customer).
      */
-    public function publicShow(string $slug): View
+    public function publicShow(string $identifier): View
     {
-        $featureRequest = $this->featureRequestService->findBySlug($slug);
+        // Try to find by UUID first, then by slug
+        $featureRequest = $this->featureRequestService->findByUuid($identifier) 
+            ?? $this->featureRequestService->findBySlug($identifier);
         
         if (!$featureRequest) {
             abort(404, 'Feature request not found.');
