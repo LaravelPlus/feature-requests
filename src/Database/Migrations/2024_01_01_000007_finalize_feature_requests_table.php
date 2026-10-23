@@ -77,24 +77,31 @@ return new class extends Migration
         // Add foreign key for assigned_to if it doesn't exist
         if (Schema::hasColumn('feature_requests', 'assigned_to')) {
             Schema::table('feature_requests', function (Blueprint $table) {
-                try {
+                if (!$this->hasForeign('assigned_to')) {
                     $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');
-                } catch (Exception $e) {
-                    // Foreign key might already exist
-                }
+            }
             });
         }
 
         // Add foreign key for user_id if it doesn't exist
         if (Schema::hasColumn('feature_requests', 'user_id')) {
             Schema::table('feature_requests', function (Blueprint $table) {
-                try {
+                if (!$this->hasForeign('user_id')) {
                     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-                } catch (Exception $e) {
-                    // Foreign key might already exist
-                }
+            }
             });
         }
+    }
+
+    private function hasForeign(string $column): bool
+    {
+        foreach (Schema::getForeignKeys('feature_requests') as $fk) {
+            if ($fk['columns'] === [$column]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -102,6 +109,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Fresh installs own these columns via 000002; only undo on legacy tables.
+        if (!Schema::hasTable('feature_statuses')) {
+            return;
+        }
+
         Schema::table('feature_requests', function (Blueprint $table) {
             // Drop foreign keys
             try {

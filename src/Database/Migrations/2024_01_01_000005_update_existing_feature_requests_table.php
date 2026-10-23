@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Legacy-upgrade only: fresh installs (000002) already have these columns and no status_id.
+        if (!Schema::hasTable('feature_requests') || !Schema::hasColumn('feature_requests', 'status_id')) {
+            return;
+        }
+
         // First, add columns without foreign key constraints
         Schema::table('feature_requests', function (Blueprint $table) {
             // Add missing columns
@@ -41,7 +46,7 @@ return new class extends Migration
         // Update existing data
         DB::table('feature_requests')->update([
             'user_id' => 1, // Set to first user
-            'slug' => DB::raw('CONCAT("feature-request-", id)'),
+            'slug' => DB::raw("CONCAT('feature-request-', id)"),
             'status' => 'pending',
             'priority' => 'medium',
             'is_public' => true,
@@ -86,6 +91,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Only undo what up() did on a legacy table (it re-adds status_id referencing feature_statuses).
+        if (!Schema::hasTable('feature_statuses')) {
+            return;
+        }
+
         Schema::table('feature_requests', function (Blueprint $table) {
             // Drop indexes
             $table->dropIndex(['status', 'created_at']);

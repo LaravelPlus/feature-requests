@@ -76,66 +76,55 @@ return new class extends Migration
 
         // Add foreign key constraints if they don't exist
         Schema::table('feature_requests', function (Blueprint $table) {
-            try {
+            if (!$this->hasForeign('category_id')) {
                 $table->foreign('category_id')->references('id')->on('feature_request_categories')->onDelete('set null');
-            } catch (Exception $e) {
-                // Foreign key might already exist
             }
-            try {
+            if (!$this->hasForeign('user_id')) {
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            } catch (Exception $e) {
-                // Foreign key might already exist
             }
-            try {
+            if (!$this->hasForeign('assigned_to')) {
                 $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');
-            } catch (Exception $e) {
-                // Foreign key might already exist
             }
         });
 
         // Add indexes if they don't exist
         Schema::table('feature_requests', function (Blueprint $table) {
-            try {
+            if (!Schema::hasIndex('feature_requests', ['status', 'created_at'])) {
                 $table->index(['status', 'created_at']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['category_id', 'status'])) {
                 $table->index(['category_id', 'status']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['user_id', 'created_at'])) {
                 $table->index(['user_id', 'created_at']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['assigned_to', 'status'])) {
                 $table->index(['assigned_to', 'status']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['is_public', 'status'])) {
                 $table->index(['is_public', 'status']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['is_featured', 'created_at'])) {
                 $table->index(['is_featured', 'created_at']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['vote_count', 'created_at'])) {
                 $table->index(['vote_count', 'created_at']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
-            try {
+            if (!Schema::hasIndex('feature_requests', ['due_date', 'status'])) {
                 $table->index(['due_date', 'status']);
-            } catch (Exception $e) {
-                // Index might already exist
             }
         });
+    }
+
+    private function hasForeign(string $column): bool
+    {
+        foreach (Schema::getForeignKeys('feature_requests') as $fk) {
+            if ($fk['columns'] === [$column]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -143,6 +132,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Fresh installs own these columns via 000002; only undo on legacy tables.
+        if (!Schema::hasTable('feature_statuses')) {
+            return;
+        }
+
         Schema::table('feature_requests', function (Blueprint $table) {
             // Drop indexes
             try {
