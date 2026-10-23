@@ -5,6 +5,7 @@ use LaravelPlus\FeatureRequests\Http\Controllers\FeatureRequestController;
 use LaravelPlus\FeatureRequests\Http\Controllers\CategoryController;
 use LaravelPlus\FeatureRequests\Http\Controllers\VoteController;
 use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
+use LaravelPlus\FeatureRequests\Http\Middleware\AuthorizeFeatureRequestsAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +17,7 @@ use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
 |
 */
 
-Route::prefix('admin/feature-requests')->name('admin.feature-requests.')->middleware(['web', 'auth'])->group(function () {
+Route::prefix('admin/feature-requests')->name('admin.feature-requests.')->middleware(['web', 'auth', AuthorizeFeatureRequestsAdmin::class])->group(function () {
     
     // Feature Requests Admin
     Route::get('/', [FeatureRequestController::class, 'adminIndex'])->name('index');

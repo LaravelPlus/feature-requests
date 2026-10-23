@@ -5,6 +5,7 @@ use LaravelPlus\FeatureRequests\Http\Controllers\FeatureRequestController;
 use LaravelPlus\FeatureRequests\Http\Controllers\VoteController;
 use LaravelPlus\FeatureRequests\Http\Controllers\CategoryController;
 use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
+use LaravelPlus\FeatureRequests\Http\Middleware\AuthorizeFeatureRequestsAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,13 +18,15 @@ use LaravelPlus\FeatureRequests\Http\Controllers\CommentController;
 |
 */
 
-Route::prefix('feature-requests')->name('feature-requests.')->group(function () {
+Route::prefix('feature-requests')->name('feature-requests.')->middleware('auth')->group(function () {
     
     // Feature Requests
     Route::get('/', [FeatureRequestController::class, 'index'])->name('index');
     Route::post('/', [FeatureRequestController::class, 'store'])->name('store');
-    Route::get('/statistics', [FeatureRequestController::class, 'statistics'])->name('statistics');
-    Route::get('/needing-attention', [FeatureRequestController::class, 'needingAttention'])->name('needing-attention');
+    Route::middleware(AuthorizeFeatureRequestsAdmin::class)->group(function () {
+        Route::get('/statistics', [FeatureRequestController::class, 'statistics'])->name('statistics');
+        Route::get('/needing-attention', [FeatureRequestController::class, 'needingAttention'])->name('needing-attention');
+    });
     
     Route::get('/{slug}', [FeatureRequestController::class, 'show'])->name('show');
     Route::put('/{slug}', [FeatureRequestController::class, 'update'])->name('update');

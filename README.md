@@ -17,6 +17,12 @@ A comprehensive Laravel package for managing feature requests with voting, comme
 - **Responsive Design**: Mobile-friendly interface
 - **Soft Deletes**: Safe deletion with recovery options
 
+## Authorization (breaking)
+
+- `admin/feature-requests/*` is behind the `manage feature requests` permission/Gate ability (`feature-requests.permissions.manage_feature_requests`); users without it get a 404. Unknown abilities are denied.
+- `/api/feature-requests/*` requires authentication; `statistics` and `needing-attention` need the manage ability; non-managers only list/see public requests.
+- Non-public requests are visible only to their owner, assignee, or managers (404 otherwise).
+
 ## 🚀 Installation
 
 ### Step 1: Install via Composer

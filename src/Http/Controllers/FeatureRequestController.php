@@ -34,6 +34,9 @@ final class FeatureRequestController extends Controller
     public function index(Request $request): View|AnonymousResourceCollection
     {
         $filters = $request->only(['status', 'category_id', 'search', 'sort_by', 'sort_direction']);
+        if (!$this->canManage()) {
+            $filters['is_public'] = true; // non-managers only see public requests
+        }
         $perPage = min($request->get('per_page', 15), config('feature-requests.pagination.max_per_page', 100));
         
         $featureRequests = $this->featureRequestService->paginate($perPage, $filters);
@@ -169,6 +172,8 @@ final class FeatureRequestController extends Controller
             abort(404, 'Feature request not found.');
         }
 
+        $this->abortUnlessVisible($featureRequest);
+
         // Increment view count
         $this->featureRequestService->incrementViewCount($featureRequest->id);
 
@@ -192,10 +197,8 @@ final class FeatureRequestController extends Controller
             abort(404, 'Feature request not found.');
         }
 
-        // Check if request is public or user has access
-        if (!$featureRequest->is_public && !auth()->check()) {
-            abort(403, 'This feature request is not public.');
-        }
+        // Non-public requests: owner, assignee or managers only (404, not 403)
+        $this->abortUnlessVisible($featureRequest);
 
         // Increment view count
         $this->featureRequestService->incrementViewCount($featureRequest->id);
